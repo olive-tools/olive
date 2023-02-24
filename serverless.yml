@@ -1,14 +1,45 @@
 service: olive
 frameworkVersion: '3'
 
+useDotenv: true
+
 provider:
   name: aws
   runtime: nodejs18.x
+  environment:
+    TOKEN: ${env:TOKEN}
+  iam:
+    # OR configure the role that will be created by Serverless (simplest):
+    role:
+      # Add statements to the IAM role to give permissions to Lambda functions
+      statements:
+        - Effect: Allow
+          Action:
+            - 's3:PutObject'
+          Resource:
+            "Fn::GetAtt": [ oliveQRCodes, Arn ]
+
+resources:
+  Resources:
+    oliveQRCodes:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: olive-qr-codes
 
 functions:
   api:
-    handler: index.handler
+    handler: src/index.handler
     events:
       - httpApi:
           path: /
           method: get
+
+  qrcodeApi:
+    handler: src/index.qrcodeHandler
+    events:
+      - httpApi:
+          path: /qrcode
+          method: post
+
+plugins:
+  - serverless-offline
