@@ -1,6 +1,8 @@
 let QRCode = require('qrcode');
 let uuid = require('uuid');
 let isValidAuth = require('./auth').isValidAuth;
+const {S3Client, PutObjectCommand} = require("@aws-sdk/client-s3");
+const s3 = new S3Client({region: 'us-east-1'});
 
 async function handler(event) {
   /* TODO:
@@ -41,27 +43,34 @@ async function hitHandler(event) {
 }
 
 async function qrcodeHandler(event) {
-  if(!isValidAuth(event.headers.authorization)) {
+  if (!isValidAuth(event.headers.authorization)) {
     return {
       statusCode: 401
     };
   }
   const {name, redirectUrl} = JSON.parse(event.body);
-  /* TODO:
-  *   validate redirect url
-  *   generate qrcode: await QRCode.toBuffer('qrcode.png', url);
-  *   put generated code as object in s3
-  *   save object link in qrCodeUrl property
-  * */
+  // TODO: validate redirect url
+  const id = uuid.v4();
+  const oliveUrl = 'https://api.olivetrees.com.br';
+  const qrcodeBuffer = await QRCode.toBuffer(`${oliveUrl}/${id}`, {type: 'png'});
+  console.log(typeof qrcodeBuffer);
+  const bucketParams = {
+    Bucket: process.env.QRCODE_BUCKET_NAME,
+    Key: `${id}.png`,
+    Body: qrcodeBuffer
+  }
+  const command = new PutObjectCommand(bucketParams);
+  const putObjectOutput = await s3.send(command);
+
+  console.log(JSON.stringify(putObjectOutput));
+
   const oliveQRCode = {
-    id: uuid.v4(), name, redirectUrl, qrCodeUrl: ''
+    id, name, redirectUrl, qrCodeUrl: ''
   };
+  // TODO: save qrcode metadata in dynamodb
+  console.log(JSON.stringify(oliveQRCode));
   return {
-    statusCode: 200,
-    headers: {
-      "content-type": "text/html",
-    },
-    body: ''
+    statusCode: 200
   };
 }
 

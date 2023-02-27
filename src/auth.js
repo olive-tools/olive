@@ -3,10 +3,7 @@ function isValidAuth(authorization) {
     return false;
   }
   const authSplit = authorization.split(' ');
-  if(authSplit.length !== 2) {
-    return false;
-  }
-  return authSplit[0] === 'Basic' && authSplit[0] === process.env.TOKEN;
+  return authSplit.length === 2 && authSplit[0] === 'Basic' && authSplit[1] === process.env.TOKEN;
 }
 
 module.exports = {isValidAuth}

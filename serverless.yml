@@ -8,6 +8,7 @@ provider:
   runtime: nodejs18.x
   environment:
     TOKEN: ${env:TOKEN}
+    QRCODE_BUCKET_NAME: ${env:QRCODE_BUCKET_NAME}
   iam:
     # OR configure the role that will be created by Serverless (simplest):
     role:
