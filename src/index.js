@@ -2,20 +2,31 @@ let QRCode = require('qrcode');
 let uuid = require('uuid');
 let isValidAuth = require('./auth').isValidAuth;
 const {S3Client, PutObjectCommand} = require("@aws-sdk/client-s3");
-const {DynamoDBClient, PutItemCommand} = require("@aws-sdk/client-dynamodb");
+const {DynamoDBClient, PutItemCommand, QueryCommand} = require("@aws-sdk/client-dynamodb");
 const region = 'us-east-1';
 const s3 = new S3Client({region});
 const dynamoDb = new DynamoDBClient({region});
 
 async function handler(event) {
-  /* TODO:
-  *   Link id in path param
-  *   {id: 21hjg3g1, redirectUrl: h93eh29he, qrcodeUrl: akshdkadh(s3 File)}
-  *   Get redirectUrl
-  *   Dispatch hit count async sns -> sqs -> lambda
-  *   Set redirect url in html redirect template
-  * */
-  const redirectUrl = 'https://www.example.com/';
+  // TODO: Dispatch hit count async sns -> sqs -> lambda
+  const command = new QueryCommand({
+    'TableName': process.env.QRCODE_TABLE_NAME,
+    'KeyConditionExpression': '#idName = :idValue',
+    'ExpressionAttributeNames': {
+      '#idName': 'id'
+    },
+    'ExpressionAttributeValues': {
+      ':idValue': {'S': event.pathParameters.id}
+    }
+  });
+  const {Items} = await dynamoDb.send(command);
+  if (Items.length === 0) {
+    return {
+      statusCode: 404
+    }
+  }
+  const [item] = Items;
+  const redirectUrl = item.redirectUrl.S;
   return {
     statusCode: 200,
     headers: {

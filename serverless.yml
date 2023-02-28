@@ -57,7 +57,7 @@ functions:
     handler: src/index.handler
     events:
       - httpApi:
-          path: /
+          path: /qrcode/{id}
           method: get
 
   qrcodeApi:
