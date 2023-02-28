@@ -2,7 +2,10 @@ let QRCode = require('qrcode');
 let uuid = require('uuid');
 let isValidAuth = require('./auth').isValidAuth;
 const {S3Client, PutObjectCommand} = require("@aws-sdk/client-s3");
-const s3 = new S3Client({region: 'us-east-1'});
+const {DynamoDBClient, PutItemCommand} = require("@aws-sdk/client-dynamodb");
+const region = 'us-east-1';
+const s3 = new S3Client({region});
+const dynamoDb = new DynamoDBClient({region});
 
 async function handler(event) {
   /* TODO:
@@ -53,7 +56,6 @@ async function qrcodeHandler(event) {
   const id = uuid.v4();
   const oliveUrl = 'https://api.olivetrees.com.br';
   const qrcodeBuffer = await QRCode.toBuffer(`${oliveUrl}/${id}`, {type: 'png'});
-  console.log(typeof qrcodeBuffer);
   const bucketParams = {
     Bucket: process.env.QRCODE_BUCKET_NAME,
     Key: `${id}.png`,
@@ -61,14 +63,29 @@ async function qrcodeHandler(event) {
   }
   const command = new PutObjectCommand(bucketParams);
   const putObjectOutput = await s3.send(command);
-
   console.log(JSON.stringify(putObjectOutput));
-
   const oliveQRCode = {
-    id, name, redirectUrl, qrCodeUrl: ''
+    id, createdAt: Date.now(), name, redirectUrl
   };
-  // TODO: save qrcode metadata in dynamodb
-  console.log(JSON.stringify(oliveQRCode));
+  const dynamoCommand = new PutItemCommand({
+    "TableName": process.env.QRCODE_TABLE_NAME,
+    'Item': {
+      "id": {
+        "S": oliveQRCode.id
+      },
+      "createdAt": {
+        'N': `${oliveQRCode.createdAt}`
+      },
+      'name': {
+        'S': oliveQRCode.name
+      },
+      'redirectUrl': {
+        'S': oliveQRCode.redirectUrl
+      }
+    }
+  });
+  const result = await dynamoDb.send(dynamoCommand);
+  console.log(JSON.stringify(result));
   return {
     statusCode: 200
   };
