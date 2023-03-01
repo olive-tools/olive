@@ -4,15 +4,14 @@ const { isValidAuth } = require("./auth");
 const { DynamoDbAdapter } = require("./dynamoDbAdapter");
 const dynamoDbAdapter = new DynamoDbAdapter();
 const { S3Client, PutObjectCommand } = require("@aws-sdk/client-s3");
-const { region } = require("./config");
+const { region, qrcodeTable, qrcodeBucket } = require("./config");
 const s3 = new S3Client({ region });
 
 async function handler(event) {
   // TODO: Dispatch hit count async sns -> sqs -> lambda
-  const item = dynamoDbAdapter.getSingleByPK(
-    { id: event.pathParameters.id },
-    process.env.QRCODE_TABLE_NAME
-  );
+  const item = await dynamoDbAdapter.getSingleByPK(qrcodeTable, {
+    id: event.pathParameters.id,
+  });
   if (!item) {
     return {
       statusCode: 404,
@@ -62,7 +61,7 @@ async function qrcodeHandler(event) {
     type: "png",
   });
   const bucketParams = {
-    Bucket: process.env.QRCODE_BUCKET_NAME,
+    Bucket: qrcodeBucket,
     Key: `${id}.png`,
     Body: qrcodeBuffer,
   };
@@ -76,10 +75,7 @@ async function qrcodeHandler(event) {
     redirectUrl,
   };
 
-  const result = await dynamoDbAdapter.putShallowItem(
-    process.env.QRCODE_TABLE_NAME,
-    oliveQRCode
-  );
+  const result = await dynamoDbAdapter.putShallowItem(qrcodeTable, oliveQRCode);
   console.log(JSON.stringify(result));
   return {
     statusCode: 200,

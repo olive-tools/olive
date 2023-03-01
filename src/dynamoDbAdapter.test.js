@@ -1,4 +1,3 @@
-const { PutItemCommand } = require("@aws-sdk/client-dynamodb");
 const { DynamoDbAdapter } = require("./dynamoDbAdapter");
 
 test("should send put item command", async () => {
@@ -23,6 +22,32 @@ test("should send put item command", async () => {
           name: { S: "my_link" },
           createdAt: { N: "2293293" },
           redirectUrl: { S: "https://example.com" },
+        },
+      },
+    })
+  );
+});
+
+test("should send query command", async () => {
+  const dynamoDbMock = {
+    send: jest.fn(() => {
+      return Promise.resolve({ Items: [{}] });
+    }),
+  };
+  await new DynamoDbAdapter(dynamoDbMock).getSingleByPK("qrcode", {
+    id: "hsuahs123413dd32",
+  });
+
+  expect(dynamoDbMock.send).toHaveBeenCalledWith(
+    expect.objectContaining({
+      input: {
+        TableName: "qrcode",
+        KeyConditionExpression: "#keyName = :keyValue",
+        ExpressionAttributeNames: {
+          "#keyName": "id",
+        },
+        ExpressionAttributeValues: {
+          ":keyValue": { S: "hsuahs123413dd32" },
         },
       },
     })

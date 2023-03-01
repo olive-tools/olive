@@ -12,13 +12,12 @@ class DynamoDbAdapter {
     this.#dynamoDb = dynamoDb;
   }
 
-  async getSingleByPK(partitionKey, tableName) {
+  async getSingleByPK(tableName, partitionKey) {
     const keys = Object.keys(partitionKey);
-    if (keys.length > 0) {
-      throw new Error("only one key is permitted");
+    if (keys.length > 1) {
+      throw new Error(`only one key is permitted ${JSON.stringify(keys)}`);
     }
     const [keyName] = keys;
-    const keyValue = partitionKey[keyName];
     const command = new QueryCommand({
       TableName: tableName,
       KeyConditionExpression: "#keyName = :keyValue",
@@ -26,11 +25,11 @@ class DynamoDbAdapter {
         "#keyName": keyName,
       },
       ExpressionAttributeValues: {
-        ":keyValue": { S: keyValue },
+        ":keyValue": { S: partitionKey[keyName] },
       },
     });
     const { Items } = await this.#dynamoDb.send(command);
-    if (Items.length > 0) {
+    if (Items.length > 1) {
       throw new Error("More than one item returned");
     }
     if (Items.length === 0) {

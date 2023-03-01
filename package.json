@@ -5,7 +5,7 @@
   "main": "src/index.js",
   "scripts": {
     "offline": "export AWS_PROFILE=personal && sls offline",
-    "deploy": "sls --aws-profile personal deploy",
+    "deploy": "export AWS_PROFILE=personal && sls deploy",
     "test": "jest"
   },
   "author": "",
