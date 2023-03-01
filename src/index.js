@@ -1,31 +1,23 @@
-let QRCode = require('qrcode');
-let uuid = require('uuid');
-let isValidAuth = require('./auth').isValidAuth;
-const {S3Client, PutObjectCommand} = require("@aws-sdk/client-s3");
-const {DynamoDBClient, PutItemCommand, QueryCommand} = require("@aws-sdk/client-dynamodb");
-const region = 'us-east-1';
-const s3 = new S3Client({region});
-const dynamoDb = new DynamoDBClient({region});
+const QRCode = require("qrcode");
+const uuid = require("uuid");
+const { isValidAuth } = require("./auth");
+const { DynamoDbAdapter } = require("./dynamoDbAdapter");
+const dynamoDbAdapter = new DynamoDbAdapter();
+const { S3Client, PutObjectCommand } = require("@aws-sdk/client-s3");
+const { region } = require("./config");
+const s3 = new S3Client({ region });
 
 async function handler(event) {
   // TODO: Dispatch hit count async sns -> sqs -> lambda
-  const command = new QueryCommand({
-    'TableName': process.env.QRCODE_TABLE_NAME,
-    'KeyConditionExpression': '#idName = :idValue',
-    'ExpressionAttributeNames': {
-      '#idName': 'id'
-    },
-    'ExpressionAttributeValues': {
-      ':idValue': {'S': event.pathParameters.id}
-    }
-  });
-  const {Items} = await dynamoDb.send(command);
-  if (Items.length === 0) {
+  const item = dynamoDbAdapter.getSingleByPK(
+    { id: event.pathParameters.id },
+    process.env.QRCODE_TABLE_NAME
+  );
+  if (!item) {
     return {
-      statusCode: 404
-    }
+      statusCode: 404,
+    };
   }
-  const [item] = Items;
   const redirectUrl = item.redirectUrl.S;
   return {
     statusCode: 200,
@@ -51,55 +43,48 @@ async function handler(event) {
 // TODO: sqs event
 async function hitHandler(event) {
   const hit = {
-    id: '',
-    dateTime: '',
-  }
+    id: "",
+    dateTime: "",
+  };
 }
 
 async function qrcodeHandler(event) {
   if (!isValidAuth(event.headers.authorization)) {
     return {
-      statusCode: 401
+      statusCode: 401,
     };
   }
-  const {name, redirectUrl} = JSON.parse(event.body);
+  const { name, redirectUrl } = JSON.parse(event.body);
   // TODO: validate redirect url
   const id = uuid.v4();
-  const oliveUrl = 'https://api.olivetrees.com.br';
-  const qrcodeBuffer = await QRCode.toBuffer(`${oliveUrl}/${id}`, {type: 'png'});
+  const oliveUrl = "https://api.olivetrees.com.br";
+  const qrcodeBuffer = await QRCode.toBuffer(`${oliveUrl}/qrcode/${id}`, {
+    type: "png",
+  });
   const bucketParams = {
     Bucket: process.env.QRCODE_BUCKET_NAME,
     Key: `${id}.png`,
-    Body: qrcodeBuffer
-  }
+    Body: qrcodeBuffer,
+  };
   const command = new PutObjectCommand(bucketParams);
   const putObjectOutput = await s3.send(command);
   console.log(JSON.stringify(putObjectOutput));
   const oliveQRCode = {
-    id, createdAt: Date.now(), name, redirectUrl
+    id,
+    createdAt: Date.now(),
+    name,
+    redirectUrl,
   };
-  const dynamoCommand = new PutItemCommand({
-    "TableName": process.env.QRCODE_TABLE_NAME,
-    'Item': {
-      "id": {
-        "S": oliveQRCode.id
-      },
-      "createdAt": {
-        'N': `${oliveQRCode.createdAt}`
-      },
-      'name': {
-        'S': oliveQRCode.name
-      },
-      'redirectUrl': {
-        'S': oliveQRCode.redirectUrl
-      }
-    }
-  });
-  const result = await dynamoDb.send(dynamoCommand);
+
+  const result = await dynamoDbAdapter.putShallowItem(
+    process.env.QRCODE_TABLE_NAME,
+    oliveQRCode
+  );
   console.log(JSON.stringify(result));
   return {
-    statusCode: 200
+    statusCode: 200,
+    body: JSON.stringify({ id }),
   };
 }
 
-module.exports = {handler, qrcodeHandler};
+module.exports = { handler, qrcodeHandler };
