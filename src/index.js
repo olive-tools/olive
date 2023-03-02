@@ -79,6 +79,9 @@ async function qrcodeHandler(event) {
   console.log(JSON.stringify(result));
   return {
     statusCode: 200,
+    headers: {
+      "content-type": "application/json",
+    },
     body: JSON.stringify({ id }),
   };
 }
