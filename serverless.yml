@@ -66,6 +66,13 @@ functions:
       - httpApi:
           path: /qrcode
           method: post
+  
+  ddbotInteractions:
+    handler: src/ddbot/index.interactionHandler
+    events:
+      - httpApi:
+          path: /interactions
+          method: post
 
 plugins:
   - serverless-offline
