@@ -25,33 +25,18 @@ async function interactionHandler(event) {
         return res.status(401).end('invalid request signature');
     }
 
-    const {
-        id,
-        application_id,
-        type,
-        data,
-        guild_id,
-        channel,
-        channel_id,
-        member,
-        user,
-        token,
-        version,
-        message,
-        app_permissions,
-        locale,
-        guild_locale,
-    } = JSON.parse(body);
+    const interaction = JSON.parse(body);
+    console.log(interaction);
 
     let result = {};
-    if (type == INTERACTION_TYPE.PING) {
+    if (interaction.type == INTERACTION_TYPE.PING) {
         result = { type: 1 }
     } else {
         result = {
             type: 4,
             data: {
                 tts: false,
-                content: `Congrats on sending your command, ${user}!`,
+                content: `Congrats on sending your command, fulano!`,
                 embeds: [],
                 allowed_mentions: { parse: [] }
             }

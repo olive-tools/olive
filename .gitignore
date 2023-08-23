@@ -8,3 +8,5 @@ jspm_packages
 
 #jest
 coverage
+
+ddbot-event-body.js
