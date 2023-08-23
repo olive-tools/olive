@@ -44,22 +44,25 @@ async function interactionHandler(event) {
     } = JSON.parse(body);
 
     let result = {};
-    switch (type) {
-        case INTERACTION_TYPE.PING:
-            result = { type: 1 }
-            break;
-        case INTERACTION_TYPE.APPLICATION_COMMAND:
-            break;
-        case INTERACTION_TYPE.MESSAGE_COMPONENT:
-            break;
-        case INTERACTION_TYPE.APPLICATION_COMMAND_AUTOCOMPLETE:
-            break;
-        case INTERACTION_TYPE.MODAL_SUBMIT:
-            break;
+    if (type == INTERACTION_TYPE.PING) {
+        result = { type: 1 }
+    } else {
+        result = {
+            type: 4,
+            data: {
+                tts: false,
+                content: `Congrats on sending your command, ${user}!`,
+                embeds: [],
+                allowed_mentions: { parse: [] }
+            }
+        }
     }
 
     return {
         statusCode: 200,
+        headers: {
+            "content-type": "application/json",
+        },
         body: JSON.stringify(result)
     };
 }
