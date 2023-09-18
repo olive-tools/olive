@@ -73,6 +73,13 @@ functions:
       - httpApi:
           path: /interactions
           method: post
+  
+  gaForm:
+    handler: src/ga-automation/index.formSubmitHandler
+    events:
+      - httpApi:
+          path: /ga/form
+          method: post
 
 plugins:
   - serverless-offline
