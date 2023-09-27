@@ -9,7 +9,7 @@ async function buildGravataAventuraPDF(input) {
     const pdfDoc = await PDFDocument.load(fs.readFileSync(path.join(__dirname, 'gravata.pdf')));
     const pages = pdfDoc.getPages()
     const firstPage = pages[0]
-    const { width, height } = firstPage.getSize();
+    const { height } = firstPage.getSize();
     const { customer, passenger } = input;
     const helveticaFont = await pdfDoc.embedFont(StandardFonts.Helvetica)
     await drawCustomer(customer, firstPage, helveticaFont, height / 2 + 243, START_WIDTH);
@@ -92,69 +92,75 @@ async function drawCustomer(customer, firstPage, helveticaFont, startHight, star
     });
 }
 
-function drawPassenger(passenger, firstPage, helveticaFont, height, startWidth) {
+function drawPassenger(passenger, firstPage, helveticaFont, startHeight, startWidth) {
     const { name, cpf, driverCode, birth, address, phone } = passenger;
     const {city, state, street} = address;
 
     firstPage.drawText(name, {
         x: startWidth + 35,
-        y: height - 80,
+        y: startHeight - 80,
         size: FONT_SIZE,
         font: helveticaFont,
         color: rgb(0.95, 0.1, 0.1),
     });
 
-    firstPage.drawText(cpf, {
-        x: startWidth,
-        y: height - 90,
+    let currentHeight = startHeight - 105;
+
+    firstPage.drawText(birth, {
+        x: startWidth + 105,
+        y: currentHeight,
         size: FONT_SIZE,
         font: helveticaFont,
         color: rgb(0.95, 0.1, 0.1),
     });
 
     firstPage.drawText(driverCode, {
-        x: startWidth,
-        y: height - 100,
+        x: startWidth + 255,
+        y: currentHeight,
         size: FONT_SIZE,
         font: helveticaFont,
         color: rgb(0.95, 0.1, 0.1),
     });
 
-    firstPage.drawText(birth, {
+    currentHeight -= 25;
+
+    firstPage.drawText(cpf, {
         x: startWidth,
-        y: height - 110,
+        y: currentHeight,
         size: FONT_SIZE,
         font: helveticaFont,
         color: rgb(0.95, 0.1, 0.1),
     });
 
     firstPage.drawText(street, {
-        x: startWidth,
-        y: height - 120,
+        x: startWidth + 155,
+        y: currentHeight,
         size: FONT_SIZE,
         font: helveticaFont,
         color: rgb(0.95, 0.1, 0.1),
     });
 
+    currentHeight -= 28;
+
     firstPage.drawText(city, {
-        x: startWidth,
-        y: height - 130,
+        x: startWidth + 37,
+        y: currentHeight,
         size: FONT_SIZE,
         font: helveticaFont,
         color: rgb(0.95, 0.1, 0.1),
     });
 
     firstPage.drawText(state, {
-        x: startWidth,
-        y: height - 140,
+        x: startWidth + 190,
+        y: currentHeight,
         size: FONT_SIZE,
         font: helveticaFont,
         color: rgb(0.95, 0.1, 0.1),
     });
 
     firstPage.drawText(phone, {
-        x: startWidth,
-        y: height - 160,
+        x: startWidth + 257,
+        y: currentHeight,
         size: FONT_SIZE,
         font: helveticaFont,
         color: rgb(0.95, 0.1, 0.1),
