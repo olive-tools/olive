@@ -10,6 +10,7 @@ provider:
     TOKEN: ${env:TOKEN}
     QRCODE_BUCKET_NAME: ${env:QRCODE_BUCKET_NAME}
     QRCODE_TABLE_NAME: ${env:QRCODE_TABLE_NAME}
+    ENVIRONMENT: ${env:ENVIRONMENT}
   iam:
     role:
       statements:
