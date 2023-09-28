@@ -15,11 +15,11 @@ async function formSubmitHandler(event) {
     const response = await saveInGoogleDrive(pdfBytes, `${fileNameFromFormData(formData)}.pdf`);
 
     return {
-        statusCode: 200,
+        statusCode: 201,
         headers: {
             "content-type": "application/json",
         },
-        body: JSON.stringify(response)
+        body: JSON.stringify(response.data)
     };
 }
 
@@ -64,7 +64,8 @@ function parseData(formData) {
         passengerCity,
         passengerState,
         passengerCep,
-        customerCep] = formData;
+        customerCep,
+        passengerPhone] = formData;
 
     const customer = {
         name: customerName,
@@ -86,8 +87,9 @@ function parseData(formData) {
     let passenger = {
         name: passengerName,
         cpf: passengerCpf,
-        driverCode: passengerDriverCode,
-        birth: passengerBirth
+        driverCode: passengerDriverCode ?? '',
+        birth: passengerBirth,
+        phone: passengerPhone
     }
 
     const sameAddress = addressType !== 'Outro';

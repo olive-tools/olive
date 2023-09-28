@@ -11,7 +11,7 @@ async function saveInGoogleDrive(blob, fileName, mimeType = 'application/pdf') {
 
     const drive = google.drive({ version: 'v3', auth: client });
 
-    await drive.files.create({
+    return drive.files.create({
         requestBody: {
             name: fileName,
             parents: ['135ZUg58zTdgtS32JzhDou0MDP10iiEYd']
