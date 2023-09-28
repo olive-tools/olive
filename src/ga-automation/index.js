@@ -12,14 +12,14 @@ async function formSubmitHandler(event) {
     const raw = JSON.parse(event.body).event.values;
     const formData = parseData(raw);
     const pdfBytes = await buildGravataAventuraPDF(formData);
-    await saveInGoogleDrive(pdfBytes, `${fileNameFromFormData(formData)}.pdf`);
+    const response = await saveInGoogleDrive(pdfBytes, `${fileNameFromFormData(formData)}.pdf`);
 
     return {
         statusCode: 200,
         headers: {
             "content-type": "application/json",
         },
-        body: JSON.stringify(raw)
+        body: JSON.stringify(response)
     };
 }
 
@@ -31,7 +31,7 @@ function fileNameFromFormData(formData) {
     const nameArray = formData.customer.name.split(' ');
     const first = nameArray[0];
     let fileName = first;
-    if(nameArray > 1) {
+    if(nameArray.length > 1) {
         const last = nameArray[nameArray.length - 1];
         fileName = `${first}-${last}`;
     }
@@ -78,8 +78,8 @@ function parseData(formData) {
         },
         phone: customerPhone
     }
-    hasPassenger = hasPassenger === 'Sim';
-    if (!hasPassenger) {
+
+    if (hasPassenger !== 'Sim') {
         return { customer };
     }
 
