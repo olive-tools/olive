@@ -1,4 +1,4 @@
-const { degrees, PDFDocument, rgb, StandardFonts } = require('pdf-lib');
+const { PDFDocument, rgb, StandardFonts } = require('pdf-lib');
 const fs = require('fs');
 const path = require('path');
 
@@ -17,7 +17,7 @@ async function buildGravataAventuraPDF(input) {
     if(input.passenger) {
         await drawPassenger(passenger, firstPage, helveticaFont, height / 2 - 12, START_WIDTH);
     }
-    return pdfDoc.save();
+    return pdfDoc.save()
 }
 
 async function drawCustomer(customer, firstPage, helveticaFont, startHight, startWidth) {

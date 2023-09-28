@@ -1,7 +1,7 @@
 const { isValidAuth } = require('../auth');
-const fs = require('fs');
 const { buildGravataAventuraPDF } = require('./pdf');
-const { parse } = require('path');
+const { saveInGoogleDrive } = require('./drive');
+const { formMock } = require('./mock');
 
 async function formSubmitHandler(event) {
     if (!isLocal() && !isValidAuth(event.headers.authorization)) {
@@ -9,20 +9,17 @@ async function formSubmitHandler(event) {
             statusCode: 401,
         };
     }
-    const row = JSON.parse(event.body).event.values;
-    const pdfBytes = await buildGravataAventuraPDF(parseData(row));
-    if (isLocal()) {
-        fs.writeFileSync('local.pdf', pdfBytes);
-    } else {
-        //send pdf file somewhere else
-    }
+    const raw = JSON.parse(event.body).event.values;
+    const formData = parseData(raw);
+    const pdfBytes = await buildGravataAventuraPDF(formData);
+    await saveInGoogleDrive(pdfBytes, `${fileNameFromFormData(formData)}.pdf`);
 
     return {
         statusCode: 200,
         headers: {
             "content-type": "application/json",
         },
-        body: JSON.stringify(row)
+        body: JSON.stringify(raw)
     };
 }
 
@@ -30,34 +27,21 @@ function isLocal() {
     return process.env.ENVIRONMENT === "local";
 }
 
+function fileNameFromFormData(formData) {
+    const nameArray = formData.customer.name.split(' ');
+    const first = nameArray[0];
+    let fileName = first;
+    if(nameArray > 1) {
+        const last = nameArray[nameArray.length - 1];
+        fileName = `${first}-${last}`;
+    }
+    const now = new Date().toJSON().slice(0, 10);
+    return `${now}-${fileName}`.toLowerCase();
+}
+
 function parseData(formData) {
     if (isLocal()) {
-        return {
-            customer: {
-                name: 'Fulano',
-                cpf: '123.456.789-00',
-                driverCode: '49823549508',
-                birth: '10/10/1996',
-                phone: '819999995555',
-                address: {
-                    street: 'Rua Coronel Urbano Ribeiro de Sena',
-                    city: 'Recife',
-                    state: 'PE',
-                }
-            },
-            passenger: {
-                name: 'Sicrano',
-                cpf: '123.456.789-00',
-                driverCode: '72438279437',
-                birth: '24/07/1997',
-                phone: '81999999999',
-                address: {
-                    street: 'Rua Monte Azul 38, apt 701',
-                    city: 'Caruaru',
-                    state: 'PE',
-                }
-            }
-        };
+        return formMock;
     }
 
     const [
