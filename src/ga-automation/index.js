@@ -3,6 +3,13 @@ const { buildGravataAventuraPDF } = require('./pdf');
 const { saveInGoogleDrive } = require('./drive');
 const { formMock } = require('./mock');
 
+async function health(event) {
+    console.log(JSON.stringify(event));
+    return {
+        statusCode: 200
+    };
+}
+
 async function formSubmitHandler(event) {
     if (!isLocal() && !isValidAuth(event.headers.authorization)) {
         return {
@@ -10,7 +17,7 @@ async function formSubmitHandler(event) {
         };
     }
     const raw = JSON.parse(event.body).event.values;
-    const formData = parseData(raw);
+    const formData = isLocal() ? formMock : parseData(raw);
     const pdfBytes = await buildGravataAventuraPDF(formData);
     const response = await saveInGoogleDrive(pdfBytes, `${fileNameFromFormData(formData)}.pdf`);
 
@@ -108,4 +115,4 @@ function parseData(formData) {
     return { customer, passenger };
 }
 
-module.exports = { formSubmitHandler };
+module.exports = { formSubmitHandler, health };

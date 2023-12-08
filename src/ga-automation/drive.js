@@ -1,15 +1,13 @@
 const path = require('path');
 const fs = require('fs');
 const { google } = require('googleapis');
+const { OAuth2Client } = require('google-auth-library');
 const { Readable } = require('stream')
 const TOKEN_PATH = path.join(__dirname, 'token.json');
+const CREDENTIAL_PATH = path.join(__dirname, 'credentials.json');
 
 async function saveInGoogleDrive(blob, fileName, mimeType = 'application/pdf') {
-    const content = fs.readFileSync(TOKEN_PATH);
-    const credentials = JSON.parse(content);
-    const client = google.auth.fromJSON(credentials);
-
-    const drive = google.drive({ version: 'v3', auth: client });
+    const drive = google.drive({ version: 'v3', auth: getAuth() });
 
     return drive.files.create({
         requestBody: {
@@ -21,6 +19,15 @@ async function saveInGoogleDrive(blob, fileName, mimeType = 'application/pdf') {
             body: Readable.from(Buffer.from(blob))
         }
     });
+}
+
+function getAuth() {
+    const credentials = JSON.parse(fs.readFileSync(CREDENTIAL_PATH));
+    const { client_secret, client_id, redirect_uris } = credentials.installed;
+    const oAuth2Client = new OAuth2Client(client_id, client_secret, redirect_uris[0]);
+    const token = JSON.parse(fs.readFileSync(TOKEN_PATH));
+    oAuth2Client.setCredentials(token);
+    return oAuth2Client;
 }
 
 module.exports = { saveInGoogleDrive };

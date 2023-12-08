@@ -81,6 +81,13 @@ functions:
       - httpApi:
           path: /ga/form
           method: post
+  
+  health:
+    handler: src/ga-automation/index.health
+    events:
+      - httpApi:
+          path: /
+          method: get
 
 plugins:
   - serverless-offline
