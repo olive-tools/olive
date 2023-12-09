@@ -2,8 +2,8 @@ const { PDFDocument, rgb, StandardFonts } = require('pdf-lib');
 const fs = require('fs');
 const path = require('path');
 
-const FONT_SIZE = 10;
-const START_WIDTH = 27;
+const FONT_SIZE = 9;
+const START_WIDTH = 85;
 const FONT_COLOR = rgb(0.95, 0.1, 0.1);
 
 async function buildGravataAventuraPDF(input) {
@@ -13,9 +13,10 @@ async function buildGravataAventuraPDF(input) {
     const { height } = firstPage.getSize();
     const { customer, passenger } = input;
     const helveticaFont = await pdfDoc.embedFont(StandardFonts.Helvetica);
-    await drawCustomer(customer, firstPage, helveticaFont, height / 2 + 243, START_WIDTH);
+    const START_HEIGHT =  height / 2 + 265;
+    await drawCustomer(customer, firstPage, helveticaFont, START_HEIGHT, START_WIDTH);
     if(input.passenger) {
-        await drawPassenger(passenger, firstPage, helveticaFont, height / 2 - 12, START_WIDTH);
+        await drawCustomer(passenger, firstPage, helveticaFont, START_HEIGHT - 68, START_WIDTH);
     }
     return pdfDoc.save()
 }
@@ -25,107 +26,24 @@ async function drawCustomer(customer, firstPage, helveticaFont, startHight, star
     const {city, state, street} = address;
 
     firstPage.drawText(name, {
-        x: startWidth + 35,
+        x: startWidth + 30,
         y: startHight,
         size: FONT_SIZE,
         font: helveticaFont,
         color: FONT_COLOR,
     });
 
-    let currentHeight = startHight - 26;
-
     firstPage.drawText(birth, {
-        x: startWidth,
-        y: currentHeight,
-        size: FONT_SIZE,
-        font: helveticaFont,
-        color: FONT_COLOR,
-    });
-
-    firstPage.drawText(driverCode, {
-        x: startWidth + 160,
-        y: currentHeight,
-        size: FONT_SIZE,
-        font: helveticaFont,
-        color: FONT_COLOR,
-    });
-
-    firstPage.drawText(cpf, {
-        x: startWidth + 300,
-        y: currentHeight,
-        size: FONT_SIZE,
-        font: helveticaFont,
-        color: FONT_COLOR,
-    });
-
-    currentHeight -= 28;
-
-    firstPage.drawText(street, {
-        x: startWidth + 52,
-        y: currentHeight,
-        size: FONT_SIZE,
-        font: helveticaFont,
-        color: FONT_COLOR,
-    });
-
-    firstPage.drawText(city, {
         x: startWidth + 290,
-        y: currentHeight,
+        y: startHight,
         size: FONT_SIZE,
         font: helveticaFont,
         color: FONT_COLOR,
     });
 
-    firstPage.drawText(state, {
-        x: startWidth + 435,
-        y: currentHeight,
-        size: FONT_SIZE,
-        font: helveticaFont,
-        color: FONT_COLOR,
-    });
-
-    firstPage.drawText(phone, {
-        x: startWidth + 50,
-        y: startHight - 69,
-        size: FONT_SIZE,
-        font: helveticaFont,
-        color: FONT_COLOR,
-    });
-}
-
-function drawPassenger(passenger, firstPage, helveticaFont, startHeight, startWidth) {
-    const { name, cpf, driverCode, birth, address, phone } = passenger;
-    const {city, state, street} = address;
-
-    firstPage.drawText(name, {
-        x: startWidth + 35,
-        y: startHeight - 80,
-        size: FONT_SIZE,
-        font: helveticaFont,
-        color: FONT_COLOR,
-    });
-
-    let currentHeight = startHeight - 105;
-
-    firstPage.drawText(birth, {
-        x: startWidth + 105,
-        y: currentHeight,
-        size: FONT_SIZE,
-        font: helveticaFont,
-        color: FONT_COLOR,
-    });
+    let currentHeight = startHight - 14;
 
     firstPage.drawText(driverCode, {
-        x: startWidth + 255,
-        y: currentHeight,
-        size: FONT_SIZE,
-        font: helveticaFont,
-        color: FONT_COLOR,
-    });
-
-    currentHeight -= 25;
-
-    firstPage.drawText(cpf, {
         x: startWidth,
         y: currentHeight,
         size: FONT_SIZE,
@@ -133,18 +51,26 @@ function drawPassenger(passenger, firstPage, helveticaFont, startHeight, startWi
         color: FONT_COLOR,
     });
 
-    firstPage.drawText(street, {
-        x: startWidth + 155,
+    firstPage.drawText(cpf, {
+        x: startWidth + 100,
         y: currentHeight,
         size: FONT_SIZE,
         font: helveticaFont,
         color: FONT_COLOR,
     });
 
-    currentHeight -= 28;
+    firstPage.drawText(street, {
+        x: startWidth + 230,
+        y: currentHeight,
+        size: FONT_SIZE,
+        font: helveticaFont,
+        color: FONT_COLOR,
+    });
+
+    currentHeight = currentHeight - 12;
 
     firstPage.drawText(city, {
-        x: startWidth + 37,
+        x: startWidth + 32,
         y: currentHeight,
         size: FONT_SIZE,
         font: helveticaFont,
@@ -152,7 +78,7 @@ function drawPassenger(passenger, firstPage, helveticaFont, startHeight, startWi
     });
 
     firstPage.drawText(state, {
-        x: startWidth + 190,
+        x: startWidth + 152,
         y: currentHeight,
         size: FONT_SIZE,
         font: helveticaFont,
@@ -160,7 +86,7 @@ function drawPassenger(passenger, firstPage, helveticaFont, startHeight, startWi
     });
 
     firstPage.drawText(phone, {
-        x: startWidth + 257,
+        x: startWidth + 218,
         y: currentHeight,
         size: FONT_SIZE,
         font: helveticaFont,
