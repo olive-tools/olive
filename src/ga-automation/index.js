@@ -1,7 +1,8 @@
-const { isValidAuth } = require('../auth');
+const { isValidAuth } = require('../shared/auth');
 const { buildGravataAventuraPDF } = require('./pdf');
 const { saveInGoogleDrive } = require('./drive');
 const { formMock } = require('./mock');
+const { saveLocal } = require('./local');
 
 async function health(event) {
     console.log(JSON.stringify(event));
@@ -19,7 +20,9 @@ async function formSubmitHandler(event) {
     const raw = JSON.parse(event.body).event.values;
     const formData = isLocal() ? formMock : parseData(raw);
     const pdfBytes = await buildGravataAventuraPDF(formData);
-    const response = await saveInGoogleDrive(pdfBytes, `${fileNameFromFormData(formData)}.pdf`);
+    const response = isLocal() ?
+        saveLocal(pdfBytes) :
+        await saveInGoogleDrive(pdfBytes, `${fileNameFromFormData(formData)}.pdf`);
 
     return {
         statusCode: 201,
@@ -38,7 +41,7 @@ function fileNameFromFormData(formData) {
     const nameArray = formData.customer.name.split(' ');
     const first = nameArray[0];
     let fileName = first;
-    if(nameArray.length > 1) {
+    if (nameArray.length > 1) {
         const last = nameArray[nameArray.length - 1];
         fileName = `${first}-${last}`;
     }

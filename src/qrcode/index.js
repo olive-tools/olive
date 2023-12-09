@@ -1,6 +1,6 @@
 const QRCode = require("qrcode");
 const uuid = require("uuid");
-const { isValidAuth } = require("./auth");
+const { isValidAuth } = require("../shared/auth");
 const { DynamoDbAdapter } = require("./dynamoDbAdapter");
 const dynamoDbAdapter = new DynamoDbAdapter();
 const { S3Client, PutObjectCommand } = require("@aws-sdk/client-s3");

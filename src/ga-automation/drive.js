@@ -3,8 +3,10 @@ const fs = require('fs');
 const { google } = require('googleapis');
 const { OAuth2Client } = require('google-auth-library');
 const { Readable } = require('stream')
+
 const TOKEN_PATH = path.join(__dirname, 'token.json');
 const CREDENTIAL_PATH = path.join(__dirname, 'credentials.json');
+const DRIVE_BASE_FOLDER_ID = '135ZUg58zTdgtS32JzhDou0MDP10iiEYd';
 
 async function saveInGoogleDrive(blob, fileName, mimeType = 'application/pdf') {
     const drive = google.drive({ version: 'v3', auth: getAuth() });
@@ -12,7 +14,7 @@ async function saveInGoogleDrive(blob, fileName, mimeType = 'application/pdf') {
     return drive.files.create({
         requestBody: {
             name: fileName,
-            parents: ['135ZUg58zTdgtS32JzhDou0MDP10iiEYd']
+            parents: [DRIVE_BASE_FOLDER_ID]
         },
         media: {
             mimeType,

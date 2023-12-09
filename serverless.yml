@@ -55,14 +55,14 @@ resources:
 
 functions:
   api:
-    handler: src/index.handler
+    handler: src/qrcode/index.handler
     events:
       - httpApi:
           path: /qrcode/{id}
           method: get
 
   qrcodeApi:
-    handler: src/index.qrcodeHandler
+    handler: src/qrcode/index.qrcodeHandler
     events:
       - httpApi:
           path: /qrcode
