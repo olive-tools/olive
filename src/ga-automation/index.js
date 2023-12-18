@@ -78,16 +78,16 @@ function parseData(formData) {
         passengerPhone] = formData;
 
     const customer = {
-        name: customerName,
-        cpf: customerCpf,
-        driverCode: customerDriverCode,
-        birth: customerBirth,
+        name: customerName.trim(),
+        cpf: customerCpf.trim(),
+        driverCode: customerDriverCode.trim(),
+        birth: customerBirth.trim(),
         address: {
-            street: customerAddress,
-            city: customerCity,
-            state: customerState,
+            street: customerAddress.trim(),
+            city: customerCity.trim(),
+            state: customerState.trim(),
         },
-        phone: customerPhone
+        phone: customerPhone.trim()
     }
 
     if (hasPassenger !== 'Sim') {
@@ -95,11 +95,11 @@ function parseData(formData) {
     }
 
     let passenger = {
-        name: passengerName,
-        cpf: passengerCpf,
-        driverCode: passengerDriverCode ?? '',
-        birth: passengerBirth,
-        phone: passengerPhone
+        name: passengerName.trim(),
+        cpf: passengerCpf.trim(),
+        driverCode: passengerDriverCode?.trim() ?? '',
+        birth: passengerBirth.trim(),
+        phone: passengerPhone.trim()
     }
 
     const sameAddress = addressType !== 'Outro';
