@@ -3,6 +3,9 @@ const { buildGravataAventuraPDF } = require('./pdf');
 const { saveInGoogleDrive } = require('./drive');
 const { formMock } = require('./mock');
 const { saveLocal } = require('./local');
+const { SendMessageCommand, SQSClient } = require("@aws-sdk/client-sqs");
+
+const client = new SQSClient({});
 
 async function health(event) {
     console.log(JSON.stringify(event));
@@ -19,10 +22,14 @@ async function formSubmitHandler(event) {
     }
     const raw = JSON.parse(event.body).event.values;
     const formData = isLocal() ? formMock : parseData(raw);
-    const pdfBytes = await buildGravataAventuraPDF(formData);
-    const response = isLocal() ?
-        saveLocal(pdfBytes) :
-        await saveInGoogleDrive(pdfBytes, `${fileNameFromFormData(formData)}.pdf`);
+
+    const command = new SendMessageCommand({
+        QueueUrl: process.env.GA_FORM_SUBMITION_QUEUE_URL,
+        MessageBody: JSON.stringify(formData),
+    });
+
+    const response = await client.send(command);
+    console.log(response);
 
     return {
         statusCode: 201,
@@ -31,6 +38,21 @@ async function formSubmitHandler(event) {
         },
         body: JSON.stringify(response.data)
     };
+}
+
+async function formSubmitMessageHandler(event) {
+    const batchItemFailures = [];
+    for (const record of event.Records) {
+        try {
+            const formSubmition = JSON.parse(record.body);
+            const pdfBytes = await buildGravataAventuraPDF(formSubmition);
+            const response = isLocal() ?
+                saveLocal(pdfBytes) :
+                await saveInGoogleDrive(pdfBytes, `${fileNameFromFormData(formSubmition)}.pdf`);
+        } catch (e) {
+            console.log(e);
+        }
+    }
 }
 
 function isLocal() {
@@ -118,4 +140,4 @@ function parseData(formData) {
     return { customer, passenger };
 }
 
-module.exports = { formSubmitHandler, health };
+module.exports = { formSubmitHandler, health, formSubmitMessageHandler };

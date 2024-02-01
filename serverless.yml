@@ -11,6 +11,10 @@ provider:
     QRCODE_BUCKET_NAME: ${env:QRCODE_BUCKET_NAME}
     QRCODE_TABLE_NAME: ${env:QRCODE_TABLE_NAME}
     ENVIRONMENT: ${env:ENVIRONMENT}
+    GA_FORM_SUBMITION_QUEUE_URL:
+      Fn::GetAtt:
+        - gaFormSubmition
+        - QueueUrl
   iam:
     role:
       statements:
@@ -29,6 +33,12 @@ provider:
            - "dynamodb:Query"
           Resource:
             - "Fn::GetAtt": [ oliveQRCodesTable, Arn ]
+        - Effect: Allow
+          Action:
+            - "sqs:SendMessage"
+            - "sqs:ReceiveMessage"
+          Resource:
+            - "Fn::GetAtt": [ gaFormSubmition, Arn ]
 
 resources:
   Resources:
@@ -51,6 +61,10 @@ resources:
             KeyType: HASH
           - AttributeName: "createdAt"
             KeyType: RANGE
+    gaFormSubmition:
+      Type: AWS::SQS::Queue
+      Properties:
+        QueueName: ga-form-submition
 
 
 functions:
@@ -81,6 +95,15 @@ functions:
       - httpApi:
           path: /ga/form
           method: post
+  gaFormMessage:
+    handler: src/ga-automation/index.formSubmitMessageHandler
+    events:
+      - sqs:
+          arn:
+            Fn::GetAtt:
+              - gaFormSubmition
+              - Arn
+  
   
   health:
     handler: src/ga-automation/index.health
