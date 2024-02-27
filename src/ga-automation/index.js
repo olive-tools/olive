@@ -22,6 +22,7 @@ async function formSubmitHandler(event) {
         };
     }
     const raw = JSON.parse(event.body).event.values;
+    console.log(raw);
     const formData = isLocal() ? formMock : parseData(raw);
 
     const command = new SendMessageCommand({
@@ -46,6 +47,7 @@ async function formSubmitMessageHandler(event) {
     for (const record of event.Records) {
         try {
             const formSubmition = JSON.parse(record.body);
+            console.log(formSubmition);
             const pdfBytes = await buildGravataAventuraPDF(formSubmition);
             const response = isLocal() ?
                 saveLocal(pdfBytes) :
@@ -101,7 +103,7 @@ function parseData(formData) {
         customerCep,
         passengerPhone,
         tour,
-        ignore_,
+        ignoreThisParameter,
         tourDate
     ] = formData;
 
@@ -119,7 +121,7 @@ function parseData(formData) {
     }
 
     if (hasPassenger !== 'Sim') {
-        return { customer };
+        return { customer, tour, tourDate };
     }
 
     let passenger = {
