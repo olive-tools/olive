@@ -3,6 +3,7 @@ const { buildGravataAventuraPDF } = require('./pdf');
 const { saveInGoogleDrive } = require('./drive');
 const { formMock } = require('./mock');
 const { saveLocal } = require('./local');
+const { convertBrDateToIso } = require('./utils');
 const { SendMessageCommand, SQSClient } = require("@aws-sdk/client-sqs");
 
 const client = new SQSClient({});
@@ -67,8 +68,9 @@ function fileNameFromFormData(formData) {
         const last = nameArray[nameArray.length - 1];
         fileName = `${first}-${last}`;
     }
-    const now = new Date().toJSON().slice(0, 10);
-    return `${now}-${fileName}`.toLowerCase();
+
+    const tourDateString = convertBrDateToIso(formData.tourDate);
+    return `${tourDateString}-${fileName}`.toLowerCase();
 }
 
 function parseData(formData) {
@@ -97,7 +99,11 @@ function parseData(formData) {
         passengerState,
         passengerCep,
         customerCep,
-        passengerPhone] = formData;
+        passengerPhone,
+        tour,
+        ignore_,
+        tourDate
+    ] = formData;
 
     const customer = {
         name: customerName.trim(),
@@ -137,7 +143,7 @@ function parseData(formData) {
             },
         };
     }
-    return { customer, passenger };
+    return { customer, passenger, tour, tourDate };
 }
 
 module.exports = { formSubmitHandler, health, formSubmitMessageHandler };

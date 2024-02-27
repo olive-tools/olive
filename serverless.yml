@@ -40,6 +40,9 @@ provider:
           Resource:
             - "Fn::GetAtt": [ gaFormSubmition, Arn ]
 
+custom:
+  logRetentionInDays: 30
+
 resources:
   Resources:
     oliveQRCodes:
@@ -114,3 +117,4 @@ functions:
 
 plugins:
   - serverless-offline
+  - serverless-plugin-log-retention
