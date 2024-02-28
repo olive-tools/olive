@@ -2,6 +2,14 @@
 
 Built with Serverless Framework
 
+# Run
+
+Start localstack
+
+`docker compose up -d`
+
+change env var ENVIRIONMENT to "local", this way will be possible to test queues locally
+
 # Generate google drive token
 
 1. Run lambda in offline mode

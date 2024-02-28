@@ -1,12 +1,13 @@
-const { isValidAuth } = require('../shared/auth');
-const { buildGravataAventuraPDF } = require('./pdf');
-const { saveInGoogleDrive } = require('./drive');
-const { formMock } = require('./mock');
-const { saveLocal } = require('./local');
-const { convertBrDateToIso } = require('./utils');
-const { SendMessageCommand, SQSClient } = require("@aws-sdk/client-sqs");
-
-const client = new SQSClient({});
+const {isValidAuth} = require('../shared/auth');
+const {buildGravataAventuraPDF} = require('./pdf');
+const {saveInGoogleDrive} = require('./drive');
+const {formMock} = require('./mock');
+const {saveLocal} = require('./local');
+const {convertBrDateToIso} = require('./utils');
+const {SendMessageCommand, SQSClient} = require("@aws-sdk/client-sqs");
+const sqsUrl = isLocal() ? "http://localhost:9324/000000000000/ga-form-submition" : process.env.GA_FORM_SUBMITION_QUEUE_URL;
+const sqsConfig = isLocal() ? {endpoint: "http://localhost:9324", region: "us-east-1"} : {};
+const client = new SQSClient(sqsConfig);
 
 async function health(event) {
     console.log(JSON.stringify(event));
@@ -24,32 +25,29 @@ async function formSubmitHandler(event) {
     const raw = JSON.parse(event.body).event.values;
     console.log(raw);
     const formData = isLocal() ? formMock : parseData(raw);
-
     const command = new SendMessageCommand({
-        QueueUrl: process.env.GA_FORM_SUBMITION_QUEUE_URL,
+        QueueUrl: sqsUrl,
         MessageBody: JSON.stringify(formData),
     });
 
-    const response = await client.send(command);
-    console.log(response);
+    await client.send(command);
 
     return {
         statusCode: 201,
         headers: {
             "content-type": "application/json",
         },
-        body: JSON.stringify(response.data)
+        body: JSON.stringify(formData)
     };
 }
 
 async function formSubmitMessageHandler(event) {
-    const batchItemFailures = [];
     for (const record of event.Records) {
         try {
             const formSubmition = JSON.parse(record.body);
             console.log(formSubmition);
             const pdfBytes = await buildGravataAventuraPDF(formSubmition);
-            const response = isLocal() ?
+            isLocal() ?
                 saveLocal(pdfBytes) :
                 await saveInGoogleDrive(pdfBytes, `${fileNameFromFormData(formSubmition)}.pdf`);
         } catch (e) {
@@ -121,7 +119,7 @@ function parseData(formData) {
     }
 
     if (hasPassenger !== 'Sim') {
-        return { customer, tour, tourDate };
+        return {customer, tour, tourDate};
     }
 
     let passenger = {
@@ -135,7 +133,7 @@ function parseData(formData) {
     const sameAddress = addressType !== 'Outro';
 
     if (sameAddress) {
-        passenger = { ...passenger, address: customer.address };
+        passenger = {...passenger, address: customer.address};
     } else {
         passenger = {
             ...passenger, address: {
@@ -145,7 +143,7 @@ function parseData(formData) {
             },
         };
     }
-    return { customer, passenger, tour, tourDate };
+    return {customer, passenger, tour, tourDate};
 }
 
-module.exports = { formSubmitHandler, health, formSubmitMessageHandler };
+module.exports = {formSubmitHandler, health, formSubmitMessageHandler};

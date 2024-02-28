@@ -68,27 +68,6 @@ resources:
 
 
 functions:
-  api:
-    handler: src/qrcode/index.handler
-    events:
-      - httpApi:
-          path: /qrcode/{id}
-          method: get
-
-  qrcodeApi:
-    handler: src/qrcode/index.qrcodeHandler
-    events:
-      - httpApi:
-          path: /qrcode
-          method: post
-  
-  ddbotInteractions:
-    handler: src/ddbot/index.interactionHandler
-    events:
-      - httpApi:
-          path: /interactions
-          method: post
-  
   gaForm:
     handler: src/ga-automation/index.formSubmitHandler
     events:
@@ -113,4 +92,15 @@ functions:
           method: get
 
 plugins:
+  - serverless-offline-sqs
   - serverless-offline
+
+custom:
+  serverless-offline-sqs:
+    autoCreate: true
+    apiVersion: '2012-11-05'
+    endpoint: http://0.0.0.0:9324
+    region: eu-west-1
+    accessKeyId: root
+    secretAccessKey: root
+    skipCacheInvalidation: false
