@@ -2,8 +2,11 @@ const { google } = require('googleapis');
 const { OAuth2Client } = require('google-auth-library');
 const fs = require('fs');
 
+const tokenPath = __dirname + '/../src/ga-automation/token.json';
+const credentialsPath = __dirname + '/credentials.json';
+
 // Load client secrets from a file
-fs.readFile('/home/afa/projects/olive/src/ga-automation/credentials.json', (err, content) => {
+fs.readFile(credentialsPath, (err, content) => {
   if (err) {
     console.error('Error loading client secret file:', err);
     return;
@@ -18,7 +21,7 @@ function authorize(credentials, callback) {
   const oAuth2Client = new OAuth2Client(client_id, client_secret, redirect_uris[0]);
 
   // Check if we have previously stored a token.
-  fs.readFile('/home/afa/projects/olive/src/ga-automation/token.json', (err, token) => {
+  fs.readFile(tokenPath, (err, token) => {
     if (err) return getAccessToken(oAuth2Client, callback);
     oAuth2Client.setCredentials(JSON.parse(token));
     callback(oAuth2Client);
@@ -26,6 +29,7 @@ function authorize(credentials, callback) {
 }
 
 function getAccessToken(oAuth2Client, callback) {
+  console.log('generating new googleapis token');
   const authUrl = oAuth2Client.generateAuthUrl({
     access_type: 'offline',
     scope: ['https://www.googleapis.com/auth/drive'],
@@ -41,9 +45,9 @@ function getAccessToken(oAuth2Client, callback) {
       if (err) return console.error('Error retrieving access token', err);
       oAuth2Client.setCredentials(token);
       // Store the token to disk for later program executions
-      fs.writeFile('/home/afa/projects/olive/src/ga-automation/token.json', JSON.stringify(token), (err) => {
+      fs.writeFile(tokenPath, JSON.stringify(token), (err) => {
         if (err) console.error(err);
-        console.log('Token stored to', '/home/afa/projects/olive/src/ga-automation/token.json');
+        console.log('Token stored to', tokenPath);
       });
       callback(oAuth2Client);
     });
