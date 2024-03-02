@@ -2,7 +2,7 @@ const fs = require('fs');
 
 function saveLocal(blob) {
     // Specify the file path where you want to save the Blob content
-    const filePath = '/home/afa/projects/olive/local.pdf';
+    const filePath = __dirname + '/../../' + 'local.pdf';
 
     // Convert the Blob to a Buffer
     const buffer = Buffer.from(blob, 'binary');
