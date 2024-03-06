@@ -39,20 +39,33 @@ class DynamoDbAdapter {
     return item;
   }
 
-  async putShallowItem(tableName, item) {
-    const dynamoDBItem = Object.keys(item).reduce(
-      (dynamoDBItem, key) => ({
-        ...dynamoDBItem,
-        [key]: { [this.#getDynamoDbDataType(item[key])]: `${item[key]}` },
-      }),
-      {}
-    );
+  async putItemFromObjet(tableName, item) {
+    const dynamoDBItem = this.#buildDynamoItemFromObject(item);
 
     const dynamoCommand = new PutItemCommand({
       TableName: tableName,
       Item: dynamoDBItem,
     });
     return this.#dynamoDb.send(dynamoCommand);
+  }
+
+  #buildDynamoItemFromObject(item) {
+    let dynamoDBItem = {};
+    for (let key of Object.keys(item)) {
+      if (typeof item[key] == 'object') {
+        dynamoDBItem = {
+          ...dynamoDBItem,
+          [key]: this.#buildDynamoItemFromObject(item[key])
+        }
+        continue;
+      }
+      dynamoDBItem = {
+        ...dynamoDBItem,
+        [key]: { [this.#getDynamoDbDataType(item[key])]: `${item[key]}` },
+      };
+    }
+
+    return dynamoDBItem;
   }
 
   #getDynamoDbDataType(value) {
