@@ -32,4 +32,4 @@ function getAuth() {
     return oAuth2Client;
 }
 
-module.exports = { saveInGoogleDrive };
+module.exports = { savePdf: saveInGoogleDrive };

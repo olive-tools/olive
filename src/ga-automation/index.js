@@ -1,13 +1,10 @@
-const {isValidAuth} = require('../shared/auth');
-const {buildGravataAventuraPDF} = require('./pdf');
-const {saveInGoogleDrive} = require('./drive');
-const {formMock} = require('./mock');
-const {saveLocal} = require('./local');
-const {convertBrDateToIso} = require('./utils');
-const {SendMessageCommand, SQSClient} = require("@aws-sdk/client-sqs");
-const sqsUrl = isLocal() ? "http://localhost:9324/000000000000/ga-form-submition" : process.env.GA_FORM_SUBMITION_QUEUE_URL;
-const sqsConfig = isLocal() ? {endpoint: "http://localhost:9324", region: "us-east-1"} : {};
-const client = new SQSClient(sqsConfig);
+const { isValidAuth } = require('../shared/auth');
+const { buildGravataAventuraPDF } = require('./pdf');
+const { convertBrDateToIso } = require('./utils');
+const { SendMessageCommand, SQSClient } = require("@aws-sdk/client-sqs"); // todo: create adapter
+const { getConfig } = require('./config');
+const config = getConfig();
+const client = new SQSClient(config.sqsConfig);
 
 async function health(event) {
     console.log(JSON.stringify(event));
@@ -17,16 +14,17 @@ async function health(event) {
 }
 
 async function formSubmitHandler(event) {
-    if (!isLocal() && !isValidAuth(event.headers.authorization)) {
+    console.log(JSON.stringify(config));
+    if (!isValidAuth(event.headers.authorization)) {
         return {
             statusCode: 401,
         };
     }
     const raw = JSON.parse(event.body).event.values;
     console.log(raw);
-    const formData = isLocal() ? formMock : parseData(raw);
+    const formData = parseData(raw);
     const command = new SendMessageCommand({
-        QueueUrl: sqsUrl,
+        QueueUrl: config.sqsUrl,
         MessageBody: JSON.stringify(formData),
     });
 
@@ -43,21 +41,22 @@ async function formSubmitHandler(event) {
 
 async function formSubmitMessageHandler(event) {
     for (const record of event.Records) {
+        const formSubmition = JSON.parse(record.body);
+        console.log(formSubmition);
         try {
-            const formSubmition = JSON.parse(record.body);
-            console.log(formSubmition);
             const pdfBytes = await buildGravataAventuraPDF(formSubmition);
-            isLocal() ?
-                saveLocal(pdfBytes) :
-                await saveInGoogleDrive(pdfBytes, `${fileNameFromFormData(formSubmition)}.pdf`);
+            const { savePdf } = require(config.savePdfFunctionPath);
+            await savePdf(pdfBytes, `${fileNameFromFormData(formSubmition)}.pdf`);
         } catch (e) {
-            console.log(e);
+            console.error('SAVE PDF TO GOOGLE DRIVE ERROR', e);
+        }
+        try {
+            const { persistTour } = require(config.persistTourFunctionPath);
+            persistTour(formSubmition);
+        } catch(e) {
+            console.error('PERSISTENCE TO DYNAMODB ERROR', e)
         }
     }
-}
-
-function isLocal() {
-    return process.env.ENVIRONMENT === "local";
 }
 
 function fileNameFromFormData(formData) {
@@ -74,10 +73,6 @@ function fileNameFromFormData(formData) {
 }
 
 function parseData(formData) {
-    if (isLocal()) {
-        return formMock;
-    }
-
     const [
         submitedAt,
         customerName,
@@ -119,7 +114,7 @@ function parseData(formData) {
     }
 
     if (hasPassenger !== 'Sim') {
-        return {customer, tour, tourDate};
+        return { customer, tour, tourDate };
     }
 
     let passenger = {
@@ -133,7 +128,7 @@ function parseData(formData) {
     const sameAddress = addressType !== 'Outro';
 
     if (sameAddress) {
-        passenger = {...passenger, address: customer.address};
+        passenger = { ...passenger, address: customer.address };
     } else {
         passenger = {
             ...passenger, address: {
@@ -143,7 +138,7 @@ function parseData(formData) {
             },
         };
     }
-    return {customer, passenger, tour, tourDate};
+    return { customer, passenger, tour, tourDate };
 }
 
-module.exports = {formSubmitHandler, health, formSubmitMessageHandler};
+module.exports = { formSubmitHandler, health, formSubmitMessageHandler };

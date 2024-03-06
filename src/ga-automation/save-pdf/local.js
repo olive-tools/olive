@@ -1,8 +1,8 @@
 const fs = require('fs');
 
-function saveLocal(blob) {
+function savePdfLocally(blob, filename, mimeType = 'application/pdf') {
     // Specify the file path where you want to save the Blob content
-    const filePath = __dirname + '/../../' + 'local.pdf';
+    const filePath = __dirname + '/../../' + filename;
 
     // Convert the Blob to a Buffer
     const buffer = Buffer.from(blob, 'binary');
@@ -14,4 +14,4 @@ function saveLocal(blob) {
     };
 }
 
-module.exports = { saveLocal };
+module.exports = { savePdf: savePdfLocally };

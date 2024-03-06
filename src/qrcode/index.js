@@ -1,7 +1,7 @@
 const QRCode = require("qrcode");
 const uuid = require("uuid");
 const { isValidAuth } = require("../shared/auth");
-const { DynamoDbAdapter } = require("./dynamoDbAdapter");
+const { DynamoDbAdapter } = require("../shared/dynamoDbAdapter");
 const dynamoDbAdapter = new DynamoDbAdapter();
 const { S3Client, PutObjectCommand } = require("@aws-sdk/client-s3");
 const { region, qrcodeTable, qrcodeBucket } = require("./config");
@@ -75,7 +75,7 @@ async function qrcodeHandler(event) {
     redirectUrl,
   };
 
-  const result = await dynamoDbAdapter.putShallowItem(qrcodeTable, oliveQRCode);
+  const result = await dynamoDbAdapter.putItemFromObjet(qrcodeTable, oliveQRCode);
   console.log(JSON.stringify(result));
   return {
     statusCode: 200,

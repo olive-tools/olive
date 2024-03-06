@@ -1,5 +1,5 @@
 service: olive
-frameworkVersion: '3'
+frameworkVersion: "3"
 
 useDotenv: true
 
@@ -20,25 +20,26 @@ provider:
       statements:
         - Effect: Allow
           Action:
-            - 's3:PutObject'
+            - "s3:PutObject"
           Resource:
             Fn::Join:
-              - '/'
-              - - "Fn::GetAtt": [ oliveQRCodes, Arn ]
-                - '*'
+              - "/"
+              - - "Fn::GetAtt": [oliveQRCodes, Arn]
+                - "*"
         - Effect: Allow
           Action:
-           - "dynamodb:PutItem"
-           - "dynamodb:GetItem"
-           - "dynamodb:Query"
+            - "dynamodb:PutItem"
+            - "dynamodb:GetItem"
+            - "dynamodb:Query"
           Resource:
-            - "Fn::GetAtt": [ oliveQRCodesTable, Arn ]
+            - "Fn::GetAtt": [oliveQRCodesTable, Arn]
+            - "Fn::GetAtt": [gaToursTable, Arn]
         - Effect: Allow
           Action:
             - "sqs:SendMessage"
             - "sqs:ReceiveMessage"
           Resource:
-            - "Fn::GetAtt": [ gaFormSubmition, Arn ]
+            - "Fn::GetAtt": [gaFormSubmition, Arn]
 
 resources:
   Resources:
@@ -65,7 +66,21 @@ resources:
       Type: AWS::SQS::Queue
       Properties:
         QueueName: ga-form-submition
-
+    gaToursTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ga-tours
+        BillingMode: PAY_PER_REQUEST
+        AttributeDefinitions:
+          - AttributeName: "tourDate"
+            AttributeType: S
+          - AttributeName: "tourName"
+            AttributeType: S
+        KeySchema:
+          - AttributeName: "tourDate"
+            KeyType: HASH
+          - AttributeName: "tourName"
+            KeyType: RANGE
 
 functions:
   gaForm:
@@ -82,8 +97,7 @@ functions:
             Fn::GetAtt:
               - gaFormSubmition
               - Arn
-  
-  
+
   health:
     handler: src/ga-automation/index.health
     events:
@@ -98,7 +112,7 @@ plugins:
 custom:
   serverless-offline-sqs:
     autoCreate: true
-    apiVersion: '2012-11-05'
+    apiVersion: "2012-11-05"
     endpoint: http://0.0.0.0:9324
     region: eu-west-1
     accessKeyId: root
