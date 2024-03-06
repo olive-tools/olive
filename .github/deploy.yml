@@ -1,0 +1,37 @@
+name: Serverless Deploy
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    name: Deploy with Serverless Framework
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Install Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '18'
+
+      - name: Install Serverless Framework
+        run: npm install -g serverless
+
+      - name: Install project dependencies
+        run: npm ci
+
+      - name: Deploy with Serverless
+        run: serverless deploy
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          TOKEN: ${{secrets.TOKEN}}
+          QRCODE_BUCKET_NAME: olive-qr-codes
+          QRCODE_TABLE_NAME: olive-qr-codes
+          ENVIRONMENT: prod
+          GA_TOURS_TABLE_NAME: ga-tours
