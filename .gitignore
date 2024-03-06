@@ -11,7 +11,7 @@ coverage
 
 ddbot-event-body.js
 
-local.pdf
+*.pdf
 
 credentials.json
 token.json
