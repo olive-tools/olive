@@ -52,7 +52,7 @@ async function formSubmitMessageHandler(event) {
         }
         try {
             const { persistTour } = require(config.persistTourFunctionPath);
-            persistTour(formSubmition);
+            await persistTour(formSubmition);
         } catch(e) {
             console.error('PERSISTENCE TO DYNAMODB ERROR', e)
         }
@@ -67,9 +67,7 @@ function fileNameFromFormData(formData) {
         const last = nameArray[nameArray.length - 1];
         fileName = `${first}-${last}`;
     }
-
-    const tourDateString = convertBrDateToIso(formData.tourDate);
-    return `${tourDateString}-${fileName}`.toLowerCase();
+    return `${formData.tourDate}-${fileName}`.toLowerCase();
 }
 
 function parseData(formData) {
@@ -95,7 +93,7 @@ function parseData(formData) {
         passengerCep,
         customerCep,
         passengerPhone,
-        tour,
+        tourName,
         ignoreThisParameter,
         tourDate
     ] = formData;
@@ -104,7 +102,7 @@ function parseData(formData) {
         name: customerName.trim(),
         cpf: customerCpf.trim(),
         driverCode: customerDriverCode.trim(),
-        birth: customerBirth.trim(),
+        birth: convertBrDateToIso(customerBirth.trim()),
         address: {
             street: customerAddress.trim(),
             city: customerCity.trim(),
@@ -114,14 +112,14 @@ function parseData(formData) {
     }
 
     if (hasPassenger !== 'Sim') {
-        return { customer, tour, tourDate };
+        return { customer, tourName, tourDate: convertBrDateToIso(tourDate) };
     }
 
     let passenger = {
         name: passengerName.trim(),
         cpf: passengerCpf.trim(),
         driverCode: passengerDriverCode?.trim() ?? '',
-        birth: passengerBirth.trim(),
+        birth: convertBrDateToIso(passengerBirth.trim()),
         phone: passengerPhone.trim()
     }
 
@@ -138,7 +136,7 @@ function parseData(formData) {
             },
         };
     }
-    return { customer, passenger, tour, tourDate };
+    return { customer, passenger, tourName, tourDate: convertBrDateToIso(tourDate) };
 }
 
 module.exports = { formSubmitHandler, health, formSubmitMessageHandler };

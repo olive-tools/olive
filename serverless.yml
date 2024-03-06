@@ -15,6 +15,7 @@ provider:
       Fn::GetAtt:
         - gaFormSubmition
         - QueueUrl
+    GA_TOURS_TABLE_NAME: ${env:GA_TOURS_TABLE_NAME}
   iam:
     role:
       statements:
