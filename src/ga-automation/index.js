@@ -2,8 +2,7 @@ const { isValidAuth } = require('../shared/auth');
 const { buildGravataAventuraPDF } = require('./pdf');
 const { convertBrDateToIso } = require('./utils');
 const { SendMessageCommand, SQSClient } = require("@aws-sdk/client-sqs"); // todo: create adapter
-const { getConfig } = require('./config');
-const config = getConfig();
+const { config } = require('./config');
 const client = new SQSClient(config.sqsConfig);
 
 async function health(event) {

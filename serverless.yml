@@ -16,6 +16,8 @@ provider:
         - gaFormSubmition
         - QueueUrl
     GA_TOURS_TABLE_NAME: ${env:GA_TOURS_TABLE_NAME}
+    GOOGLE_DRIVE_CREDENTIALS: ${env:GOOGLE_DRIVE_CREDENTIALS}
+    GOOGLE_DRIVE_TOKEN: ${env:GOOGLE_DRIVE_TOKEN}
   iam:
     role:
       statements:

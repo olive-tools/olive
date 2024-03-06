@@ -1,9 +1,9 @@
 const { DynamoDbAdapter } = require("../../shared/dynamoDbAdapter");
-const { getConfig } = require('../config');
+const { config } = require('../config');
 const dynamoDbAdapter = new DynamoDbAdapter();
 
 async function persistTour(object) {
-    const result = await dynamoDbAdapter.putItemFromObjet(getConfig().toursTableName, object);
+    const result = await dynamoDbAdapter.putItemFromObjet(config.toursTableName, object);
     return result;
 }
 
