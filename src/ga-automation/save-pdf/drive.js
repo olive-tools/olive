@@ -21,7 +21,8 @@ async function saveInGoogleDrive(blob, fileName, mimeType = 'application/pdf') {
 }
 
 function getAuth() {
-    const { client_secret, client_id, redirect_uris } = config.googleDriveCredentials;
+    const { installed } = config.googleDriveCredentials;
+    const { client_secret, client_id, redirect_uris } = installed;
     const oAuth2Client = new OAuth2Client(client_id, client_secret, redirect_uris[0]);
     oAuth2Client.setCredentials(config.googleDriveToken);
     return oAuth2Client;
