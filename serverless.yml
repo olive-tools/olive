@@ -1,7 +1,7 @@
 service: olive
 frameworkVersion: "3"
 
-useDotenv: false
+useDotenv: true
 
 provider:
   name: aws
