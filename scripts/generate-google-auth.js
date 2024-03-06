@@ -3,7 +3,7 @@ const { OAuth2Client } = require('google-auth-library');
 const fs = require('fs');
 
 const tokenPath = __dirname + '/../src/ga-automation/token.json';
-const credentialsPath = __dirname + '/credentials.json';
+const credentialsPath = __dirname + '/../src/ga-automation/credentials.json';
 
 // Load client secrets from a file
 fs.readFile(credentialsPath, (err, content) => {
