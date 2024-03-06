@@ -3,6 +3,7 @@ const { buildGravataAventuraPDF } = require('./pdf');
 const { convertBrDateToIso } = require('./utils');
 const { SendMessageCommand, SQSClient } = require("@aws-sdk/client-sqs"); // todo: create adapter
 const { config } = require('./config');
+const {v4} = require('uuid');
 const client = new SQSClient(config.sqsConfig);
 
 async function health(event) {
@@ -51,7 +52,7 @@ async function formSubmitMessageHandler(event) {
         }
         try {
             const { persistTour } = require(config.persistTourFunctionPath);
-            await persistTour(formSubmition);
+            await persistTour({...formSubmition, id: v4()});
         } catch(e) {
             console.error('PERSISTENCE TO DYNAMODB ERROR', e)
         }

@@ -72,17 +72,17 @@ resources:
     gaToursTable:
       Type: AWS::DynamoDB::Table
       Properties:
-        TableName: ga-tours
+        TableName: ga-tours-atv
         BillingMode: PAY_PER_REQUEST
         AttributeDefinitions:
           - AttributeName: "tourDate"
             AttributeType: S
-          - AttributeName: "tourName"
+          - AttributeName: "id"
             AttributeType: S
         KeySchema:
           - AttributeName: "tourDate"
             KeyType: HASH
-          - AttributeName: "tourName"
+          - AttributeName: "id"
             KeyType: RANGE
 
 functions:
