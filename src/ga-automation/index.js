@@ -41,14 +41,20 @@ async function formSubmitHandler(event) {
 
 async function formSubmitMessageHandler(event) {
     for (const record of event.Records) {
+        const formSubmition = JSON.parse(record.body);
+        console.log(formSubmition);
         try {
-            const formSubmition = JSON.parse(record.body);
-            console.log(formSubmition);
             const pdfBytes = await buildGravataAventuraPDF(formSubmition);
             const { savePdf } = require(config.savePdfFunctionPath);
             await savePdf(pdfBytes, `${fileNameFromFormData(formSubmition)}.pdf`);
         } catch (e) {
-            console.log(e);
+            console.error('SAVE PDF TO GOOGLE DRIVE ERROR', e);
+        }
+        try {
+            const { persistTour } = require(config.persistTourFunctionPath);
+            persistTour(formSubmition);
+        } catch(e) {
+            console.error('PERSISTENCE TO DYNAMODB ERROR', e)
         }
     }
 }

@@ -75,7 +75,7 @@ async function qrcodeHandler(event) {
     redirectUrl,
   };
 
-  const result = await dynamoDbAdapter.putShallowItem(qrcodeTable, oliveQRCode);
+  const result = await dynamoDbAdapter.putItemFromObjet(qrcodeTable, oliveQRCode);
   console.log(JSON.stringify(result));
   return {
     statusCode: 200,
