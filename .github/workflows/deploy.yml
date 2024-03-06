@@ -34,6 +34,6 @@ jobs:
           QRCODE_BUCKET_NAME: olive-qr-codes
           QRCODE_TABLE_NAME: olive-qr-codes
           ENVIRONMENT: prod
-          GA_TOURS_TABLE_NAME: ga-tours
+          GA_TOURS_TABLE_NAME: ga-tours-atv
           GOOGLE_DRIVE_CREDENTIALS: ${{ secrets.GOOGLE_DRIVE_CREDENTIALS }}
           GOOGLE_DRIVE_TOKEN: ${{ secrets.GOOGLE_DRIVE_TOKEN }}
