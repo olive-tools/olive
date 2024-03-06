@@ -5,6 +5,8 @@ function getConfig() {
         savePdfFunctionPath: isLocal() ? __dirname + '/save-pdf/local.js' : __dirname + '/save-pdf/drive.js',
         toursTableName: process.env.GA_TOURS_TABLE_NAME,
         persistTourFunctionPath: isLocal() ? __dirname + '/persist-tour/local.js' : __dirname + '/persist-tour/dynamodb.js',
+        googleDriveCredentials: JSON.parse(process.env.GOOGLE_DRIVE_CREDENTIALS),
+        googleDriveToken: JSON.parse(process.env.GOOGLE_DRIVE_TOKEN)
     }
 }
 
@@ -12,4 +14,4 @@ function isLocal() {
     return process.env.ENVIRONMENT === "local";
 }
 
-module.exports = { getConfig };
+module.exports = { config: getConfig() };
