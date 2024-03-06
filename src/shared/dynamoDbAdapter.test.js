@@ -55,8 +55,10 @@ test("should send put item command with nested objects", async () => {
           createdAt: { N: "2293293" },
           redirectUrl: { S: "https://example.com" },
           nested: {
-            nestedName: { S: "NESTED" },
-            nestedNumber: { N: "2293293" }
+            M: {
+              nestedName: { S: "NESTED" },
+              nestedNumber: { N: "2293293" }
+            }
           }
         },
       },

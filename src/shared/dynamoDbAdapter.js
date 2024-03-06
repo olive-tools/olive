@@ -3,12 +3,11 @@ const {
   PutItemCommand,
   QueryCommand,
 } = require("@aws-sdk/client-dynamodb");
-const { region } = require("./config");
 
 class DynamoDbAdapter {
   #dynamoDb;
 
-  constructor(dynamoDb = new DynamoDBClient({ region })) {
+  constructor(dynamoDb = new DynamoDBClient({ region: "us-east-1" })) {
     this.#dynamoDb = dynamoDb;
   }
 
@@ -49,13 +48,13 @@ class DynamoDbAdapter {
     return this.#dynamoDb.send(dynamoCommand);
   }
 
-  #buildDynamoItemFromObject(item) {
+  #buildDynamoItemFromObject(item) { //to be complete, function should cover keys which are arrays -> https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/HowItWorks.NamingRulesDataTypes.html#HowItWorks.DataTypeDescriptors
     let dynamoDBItem = {};
     for (let key of Object.keys(item)) {
       if (typeof item[key] == 'object') {
         dynamoDBItem = {
           ...dynamoDBItem,
-          [key]: this.#buildDynamoItemFromObject(item[key])
+          [key]: { 'M': this.#buildDynamoItemFromObject(item[key]) }
         }
         continue;
       }
@@ -72,12 +71,18 @@ class DynamoDbAdapter {
     switch (typeof value) {
       case "undefined":
         return "NULL";
+      case "null":
+        return "NULL";
       case "string":
+        return "S";
+      case "symbol":
         return "S";
       case "number":
         return "N";
       case "bigint":
         return "N";
+      case "boolean":
+        return "BOOL";
       default:
         throw new Error("Not implemented");
     }
