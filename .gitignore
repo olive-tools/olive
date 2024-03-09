@@ -12,6 +12,7 @@ coverage
 ddbot-event-body.js
 
 *.pdf
+*-seguro.xlsx
 
 credentials.json
 token.json
