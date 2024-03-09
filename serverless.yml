@@ -100,13 +100,16 @@ functions:
             Fn::GetAtt:
               - gaFormSubmition
               - Arn
-
   health:
     handler: src/ga-automation/index.health
     events:
       - httpApi:
           path: /
           method: get
+  insuranceScheduleHandler:
+    handler: src/ga-automation/index.insuranceScheduleHandler
+    events:
+      - schedule: cron(0 9 * * ? *) # utc-0 which is 6am in brazil
 
 plugins:
   - serverless-offline-sqs

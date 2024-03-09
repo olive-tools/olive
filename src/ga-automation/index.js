@@ -139,4 +139,8 @@ function parseData(formData) {
     return { customer, passenger, tourName, tourDate: convertBrDateToIso(tourDate) };
 }
 
-module.exports = { formSubmitHandler, health, formSubmitMessageHandler };
+function insuranceScheduleHandler(event) {
+
+}
+
+module.exports = { formSubmitHandler, health, formSubmitMessageHandler, insuranceScheduleHandler };
