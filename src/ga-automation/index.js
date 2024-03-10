@@ -3,7 +3,10 @@ const { buildGravataAventuraPDF } = require('./pdf');
 const { convertBrDateToIso } = require('./utils');
 const { SendMessageCommand, SQSClient } = require("@aws-sdk/client-sqs"); // todo: create adapter
 const { config } = require('./config');
-const {v4} = require('uuid');
+const { v4 } = require('uuid');
+const { DynamoDbAdapter } = require('../shared/dynamoDbAdapter');
+const { insertSheetRows } = require('./googledrive/insert-sheet-rows');
+const { copyFile } = require('./googledrive/copy-file');
 const client = new SQSClient(config.sqsConfig);
 
 async function health(event) {
@@ -52,8 +55,8 @@ async function formSubmitMessageHandler(event) {
         }
         try {
             const { persistTour } = require(config.persistTourFunctionPath);
-            await persistTour({...formSubmition, id: v4()});
-        } catch(e) {
+            await persistTour({ ...formSubmition, id: v4() });
+        } catch (e) {
             console.error('PERSISTENCE TO DYNAMODB ERROR', e)
         }
     }
@@ -139,8 +142,22 @@ function parseData(formData) {
     return { customer, passenger, tourName, tourDate: convertBrDateToIso(tourDate) };
 }
 
-function insuranceScheduleHandler(event) {
-
+async function insuranceScheduleHandler(event) {
+    const dynamoDbAdapter = new DynamoDbAdapter();
+    const tourDate = (new Date()).toISOString().split('T')[0];
+    const tourAtvs = await dynamoDbAdapter.getByPK(config.toursTableName, { tourDate });
+    const personRows = tourAtvs.flatMap(tourAtv => {
+        const { customer, passenger } = tourAtv;
+        return [customer, passenger]
+    }).map(person => {
+        return [person.name.S, person.cpf.S, person.birth.S, tourDate, tourDate, 30000, '', '', 1, 1];
+    });
+    if (personList.length == 0) {
+        return;
+    }
+    const copyFileMetadata = await copyFile(config.googleDriveBaseInsuranceFile, `${tourDate}-seguros`);
+    const range = `Plan1!B8:K${7 + personRows.length}`;
+    await insertSheetRows(copyFileMetadata.id, range, personRows);
 }
 
 module.exports = { formSubmitHandler, health, formSubmitMessageHandler, insuranceScheduleHandler };
