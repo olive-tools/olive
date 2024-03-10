@@ -1,6 +1,6 @@
 const { isValidAuth } = require('../shared/auth');
 const { buildGravataAventuraPDF } = require('./pdf');
-const { convertBrDateToIso } = require('./utils');
+const { convertBrDateToIso, currentBrIsoDate } = require('./utils');
 const { SendMessageCommand, SQSClient } = require("@aws-sdk/client-sqs"); // todo: create adapter
 const { config } = require('./config');
 const { v4 } = require('uuid');
@@ -143,9 +143,15 @@ function parseData(formData) {
 }
 
 async function insuranceScheduleHandler(event) {
-    const dynamoDbAdapter = new DynamoDbAdapter();
-    const tourDate = (new Date()).toISOString().split('T')[0];
-    const tourAtvs = await dynamoDbAdapter.getByPK(config.toursTableName, { tourDate });
+    let tourAtvs;
+    try {
+        const dynamoDbAdapter = new DynamoDbAdapter();
+        const tourDate = currentBrIsoDate();
+        tourAtvs = await dynamoDbAdapter.getByPK(config.toursTableName, { tourDate });
+    } catch (e) {
+        console.error('ERROR TRYING TO RETRIEVE TOUR ATVS', e);
+        return;
+    }
     const personRows = tourAtvs.flatMap(tourAtv => {
         const { customer, passenger } = tourAtv;
         return [customer, passenger]
@@ -155,9 +161,19 @@ async function insuranceScheduleHandler(event) {
     if (personList.length == 0) {
         return;
     }
-    const copyFileMetadata = await copyFile(config.googleDriveBaseInsuranceFile, `${tourDate}-seguros`);
-    const range = `Plan1!B8:K${7 + personRows.length}`;
-    await insertSheetRows(copyFileMetadata.id, range, personRows);
+    let copyFileMetadata;
+    try {
+        copyFileMetadata = await copyFile(config.googleDriveBaseInsuranceFile, `${tourDate}-seguros`);
+    } catch (e) {
+        console.error('ERROR COPYING GOOGLE DRIVE FILE', e);
+        return;
+    }
+    try {
+        const range = `Plan1!B8:K${7 + personRows.length}`;
+        await insertSheetRows(copyFileMetadata.id, range, personRows);
+    } catch (e) {
+        console.error('ERROR INSERTING SHEET ROWS', e);
+    }
 }
 
 module.exports = { formSubmitHandler, health, formSubmitMessageHandler, insuranceScheduleHandler };
