@@ -143,10 +143,10 @@ function parseData(formData) {
 }
 
 async function insuranceScheduleHandler(event) {
+    const tourDate = currentBrIsoDate();
     let tourAtvs;
     try {
         const dynamoDbAdapter = new DynamoDbAdapter();
-        const tourDate = currentBrIsoDate();
         tourAtvs = await dynamoDbAdapter.getByPK(config.toursTableName, { tourDate });
     } catch (e) {
         console.error('ERROR TRYING TO RETRIEVE TOUR ATVS', e);
