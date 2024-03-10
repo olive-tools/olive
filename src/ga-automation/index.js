@@ -152,9 +152,14 @@ async function insuranceScheduleHandler(event) {
         console.error('ERROR TRYING TO RETRIEVE TOUR ATVS', e);
         return;
     }
+    if(!tourAtvs) {
+        return;
+    }
     const personRows = tourAtvs.flatMap(tourAtv => {
         const { customer, passenger } = tourAtv;
-        return [customer, passenger]
+        if(!passenger)
+            return [customer.M];
+        return [customer.M, passenger.M]
     }).map(person => {
         return [person.name.S, person.cpf.S, person.birth.S, tourDate, tourDate, 30000, '', '', 1, 1];
     });
