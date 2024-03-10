@@ -1,8 +1,7 @@
 const { google } = require('googleapis');
 const { Readable } = require('stream')
 const { getAuth } = require('../googledrive/auth');
-
-const DRIVE_BASE_FOLDER_ID = '135ZUg58zTdgtS32JzhDou0MDP10iiEYd';
+const { config } = require('../config');
 
 async function saveInGoogleDrive(blob, fileName, mimeType = 'application/pdf') {
     const drive = google.drive({ version: 'v3', auth: getAuth() });
@@ -10,7 +9,7 @@ async function saveInGoogleDrive(blob, fileName, mimeType = 'application/pdf') {
     return drive.files.create({
         requestBody: {
             name: fileName,
-            parents: [DRIVE_BASE_FOLDER_ID]
+            parents: [config.googleDriveParentTermFolder]
         },
         media: {
             mimeType,

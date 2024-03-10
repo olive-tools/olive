@@ -31,4 +31,4 @@ async function insertSheetRows(googleSheetId, range, rows) {
 
 }
 
-module.exports = { insertRows };
+module.exports = { insertSheetRows };

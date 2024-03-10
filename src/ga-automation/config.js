@@ -6,7 +6,11 @@ function getConfig() {
         toursTableName: process.env.GA_TOURS_TABLE_NAME,
         persistTourFunctionPath: isLocal() ? __dirname + '/persist-tour/local.js' : __dirname + '/persist-tour/dynamodb.js',
         googleDriveCredentials: JSON.parse(process.env.GOOGLE_DRIVE_CREDENTIALS),
-        googleDriveToken: JSON.parse(process.env.GOOGLE_DRIVE_TOKEN)
+        googleDriveToken: JSON.parse(process.env.GOOGLE_DRIVE_TOKEN),
+        googleDriveBaseInsuranceFile: process.env.GOOGLE_DRIVE_BASE_INSURANCE_FILE,
+        googleDriveParentTermFolder: process.env.GOOGLE_DRIVE_PARENT_PDF_FOLDER,
+        googleDriveParentInsuranceFolder: process.env.GOOGLE_DRIVE_PARENT_INSURANCE_FOLDER,
+
     }
 }
 
