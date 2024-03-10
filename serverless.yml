@@ -18,6 +18,9 @@ provider:
     GA_TOURS_TABLE_NAME: ${env:GA_TOURS_TABLE_NAME}
     GOOGLE_DRIVE_CREDENTIALS: ${env:GOOGLE_DRIVE_CREDENTIALS}
     GOOGLE_DRIVE_TOKEN: ${env:GOOGLE_DRIVE_TOKEN}
+    GOOGLE_DRIVE_BASE_INSURANCE_FILE: ${env:GOOGLE_DRIVE_BASE_INSURANCE_FILE}
+    GOOGLE_DRIVE_PARENT_PDF_FOLDER: ${env:GOOGLE_DRIVE_PARENT_PDF_FOLDER}
+    GOOGLE_DRIVE_PARENT_INSURANCE_FOLDER: ${env:GOOGLE_DRIVE_PARENT_INSURANCE_FOLDER}
   iam:
     role:
       statements:
@@ -100,13 +103,16 @@ functions:
             Fn::GetAtt:
               - gaFormSubmition
               - Arn
-
   health:
     handler: src/ga-automation/index.health
     events:
       - httpApi:
           path: /
           method: get
+  insuranceScheduleHandler:
+    handler: src/ga-automation/index.insuranceScheduleHandler
+    events:
+      - schedule: cron(0 9 * * ? *) # utc-0 which is 6am in brazil
 
 plugins:
   - serverless-offline-sqs

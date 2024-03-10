@@ -12,6 +12,12 @@ class DynamoDbAdapter {
   }
 
   async getSingleByPK(tableName, partitionKey) {
+    const items = this.getByPK(tableName, partitionKey);
+    const [item] = items;
+    return item;
+  }
+
+  async getByPK(tableName, partitionKey) {
     const keys = Object.keys(partitionKey);
     if (keys.length > 1) {
       throw new Error(`only one key is permitted ${JSON.stringify(keys)}`);
@@ -34,8 +40,7 @@ class DynamoDbAdapter {
     if (Items.length === 0) {
       return undefined;
     }
-    const [item] = Items;
-    return item;
+    return Items;
   }
 
   async putItemFromObjet(tableName, item) {

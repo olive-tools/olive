@@ -1,9 +1,12 @@
 const { isValidAuth } = require('../shared/auth');
 const { buildGravataAventuraPDF } = require('./pdf');
-const { convertBrDateToIso } = require('./utils');
+const { convertBrDateToIso, currentBrIsoDate } = require('./utils');
 const { SendMessageCommand, SQSClient } = require("@aws-sdk/client-sqs"); // todo: create adapter
 const { config } = require('./config');
-const {v4} = require('uuid');
+const { v4 } = require('uuid');
+const { DynamoDbAdapter } = require('../shared/dynamoDbAdapter');
+const { insertSheetRows } = require('./googledrive/insert-sheet-rows');
+const { copyFile } = require('./googledrive/copy-file');
 const client = new SQSClient(config.sqsConfig);
 
 async function health(event) {
@@ -52,8 +55,8 @@ async function formSubmitMessageHandler(event) {
         }
         try {
             const { persistTour } = require(config.persistTourFunctionPath);
-            await persistTour({...formSubmition, id: v4()});
-        } catch(e) {
+            await persistTour({ ...formSubmition, id: v4() });
+        } catch (e) {
             console.error('PERSISTENCE TO DYNAMODB ERROR', e)
         }
     }
@@ -139,4 +142,38 @@ function parseData(formData) {
     return { customer, passenger, tourName, tourDate: convertBrDateToIso(tourDate) };
 }
 
-module.exports = { formSubmitHandler, health, formSubmitMessageHandler };
+async function insuranceScheduleHandler(event) {
+    let tourAtvs;
+    try {
+        const dynamoDbAdapter = new DynamoDbAdapter();
+        const tourDate = currentBrIsoDate();
+        tourAtvs = await dynamoDbAdapter.getByPK(config.toursTableName, { tourDate });
+    } catch (e) {
+        console.error('ERROR TRYING TO RETRIEVE TOUR ATVS', e);
+        return;
+    }
+    const personRows = tourAtvs.flatMap(tourAtv => {
+        const { customer, passenger } = tourAtv;
+        return [customer, passenger]
+    }).map(person => {
+        return [person.name.S, person.cpf.S, person.birth.S, tourDate, tourDate, 30000, '', '', 1, 1];
+    });
+    if (personList.length == 0) {
+        return;
+    }
+    let copyFileMetadata;
+    try {
+        copyFileMetadata = await copyFile(config.googleDriveBaseInsuranceFile, `${tourDate}-seguros`);
+    } catch (e) {
+        console.error('ERROR COPYING GOOGLE DRIVE FILE', e);
+        return;
+    }
+    try {
+        const range = `Plan1!B8:K${7 + personRows.length}`;
+        await insertSheetRows(copyFileMetadata.id, range, personRows);
+    } catch (e) {
+        console.error('ERROR INSERTING SHEET ROWS', e);
+    }
+}
+
+module.exports = { formSubmitHandler, health, formSubmitMessageHandler, insuranceScheduleHandler };
