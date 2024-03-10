@@ -163,7 +163,7 @@ async function insuranceScheduleHandler(event) {
     }).map(person => {
         return [person.name.S, person.cpf.S, person.birth.S, tourDate, tourDate, 30000, '', '', 1, 1];
     });
-    if (personList.length == 0) {
+    if (personRows.length == 0) {
         return;
     }
     let copyFileMetadata;
