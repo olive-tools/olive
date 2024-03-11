@@ -12,7 +12,7 @@ class DynamoDbAdapter {
   }
 
   async getSingleByPK(tableName, partitionKey) {
-    const items = this.getByPK(tableName, partitionKey);
+    const items = await this.getByPK(tableName, partitionKey);
     const [item] = items;
     return item;
   }
@@ -34,9 +34,6 @@ class DynamoDbAdapter {
       },
     });
     const { Items } = await this.#dynamoDb.send(command);
-    if (Items.length > 1) {
-      throw new Error("More than one item returned");
-    }
     if (Items.length === 0) {
       return undefined;
     }
