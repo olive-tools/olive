@@ -11,6 +11,10 @@ class DynamoDbAdapter {
     this.#dynamoDb = dynamoDb;
   }
 
+  setDynamoDbClient(dynamoDbClient) {
+    this.#dynamoDb = dynamoDbClient;
+  }
+
   async getSingleByPK(tableName, partitionKey) {
     const items = await this.getByPK(tableName, partitionKey);
     const [item] = items;
