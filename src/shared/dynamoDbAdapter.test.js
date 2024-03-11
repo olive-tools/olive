@@ -69,7 +69,7 @@ test("should send put item command with nested objects", async () => {
 test("should send query command", async () => {
   const dynamoDbMock = {
     send: jest.fn(() => {
-      return Promise.resolve({ Items: [{}] });
+      return Promise.resolve({ Items: [{}, {}] });
     }),
   };
   await new DynamoDbAdapter(dynamoDbMock).getSingleByPK("qrcode", {

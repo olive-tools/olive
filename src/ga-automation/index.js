@@ -142,22 +142,21 @@ function parseData(formData) {
     return { customer, passenger, tourName, tourDate: convertBrDateToIso(tourDate) };
 }
 
-async function insuranceScheduleHandler(event) {
+async function insuranceScheduleHandler(event, dynamoDbAdapter = new DynamoDbAdapter()) {
     const tourDate = currentBrIsoDate();
     let tourAtvs;
     try {
-        const dynamoDbAdapter = new DynamoDbAdapter();
         tourAtvs = await dynamoDbAdapter.getByPK(config.toursTableName, { tourDate });
     } catch (e) {
         console.error('ERROR TRYING TO RETRIEVE TOUR ATVS', e);
         return;
     }
-    if(!tourAtvs) {
+    if (!tourAtvs) {
         return;
     }
     const personRows = tourAtvs.flatMap(tourAtv => {
         const { customer, passenger } = tourAtv;
-        if(!passenger)
+        if (!passenger)
             return [customer.M];
         return [customer.M, passenger.M]
     }).map(person => {
