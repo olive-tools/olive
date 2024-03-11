@@ -91,4 +91,4 @@ class DynamoDbAdapter {
   }
 }
 
-module.exports = { DynamoDbAdapter };
+module.exports = new DynamoDbAdapter();

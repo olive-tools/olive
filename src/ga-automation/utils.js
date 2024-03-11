@@ -6,10 +6,10 @@ function convertBrDateToIso(dateString) {
     return `${year}-${month}-${day}`;
 }
 
-function currentBrIsoDate() {
-    const brDateTime = new Date().toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" });
+function toBrIsoDate(date = new Date()) {
+    const brDateTime = date.toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" });
     const brDate = brDateTime.split(',')[0];
     const brDateParts = brDate.split('/');
     return `${brDateParts[2]}-${brDateParts[1]}-${brDateParts[0]}`;
 }
-module.exports = { convertBrDateToIso, currentBrIsoDate };
+module.exports = { convertBrDateToIso, toBrIsoDate };

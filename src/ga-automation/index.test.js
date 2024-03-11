@@ -28,13 +28,10 @@ const resultsFromQuery = [{
 }];
 jest.mock('../shared/dynamoDbAdapter', () => {
     return {
-        DynamoDbAdapter: jest.fn().mockImplementation(() => {
-            return {
-                getByPK: jest.fn(async (tableName, partitionKey) => {
-                    return Promise.resolve(resultsFromQuery)
-                })
-            }
+        getByPK: jest.fn(async (tableName, partitionKey) => {
+            return Promise.resolve(resultsFromQuery)
         })
+
     }
 });
 jest.mock('./config', () => {
@@ -46,11 +43,10 @@ jest.mock('./config', () => {
     }
 });
 
-const { DynamoDbAdapter } = require('../shared/dynamoDbAdapter');
+const dynamoDbAdapter = require('../shared/dynamoDbAdapter');
 const { insuranceScheduleHandler } = require('./index');
 
 test("insuranceScheduleHandler should call DynamoDbAdapter getByPk", async () => {
-    const dynamoDbMockInstance = new DynamoDbAdapter();
-    insuranceScheduleHandler({}, dynamoDbMockInstance);
-    expect(dynamoDbMockInstance.getByPK).toHaveBeenCalledTimes(1); 
+    insuranceScheduleHandler({}, new Date(2024, 2, 11));
+    expect(dynamoDbAdapter.getByPK).toHaveBeenCalledWith('TOURS_TABLE', { tourDate: '2024-03-11' });
 });

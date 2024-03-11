@@ -1,10 +1,10 @@
 const { isValidAuth } = require('../shared/auth');
 const { buildGravataAventuraPDF } = require('./pdf');
-const { convertBrDateToIso, currentBrIsoDate } = require('./utils');
+const { convertBrDateToIso, toBrIsoDate } = require('./utils');
 const { SendMessageCommand, SQSClient } = require("@aws-sdk/client-sqs"); // todo: create adapter
 const { config } = require('./config');
 const { v4 } = require('uuid');
-const { DynamoDbAdapter } = require('../shared/dynamoDbAdapter');
+const dynamoDbAdapter = require('../shared/dynamoDbAdapter');
 const { insertSheetRows } = require('./googledrive/insert-sheet-rows');
 const { copyFile } = require('./googledrive/copy-file');
 const client = new SQSClient(config.sqsConfig);
@@ -142,8 +142,8 @@ function parseData(formData) {
     return { customer, passenger, tourName, tourDate: convertBrDateToIso(tourDate) };
 }
 
-async function insuranceScheduleHandler(event, dynamoDbAdapter = new DynamoDbAdapter()) {
-    const tourDate = currentBrIsoDate();
+async function insuranceScheduleHandler(event, tourDate = new Date()) {
+    tourDate = toBrIsoDate(tourDate);
     let tourAtvs;
     try {
         tourAtvs = await dynamoDbAdapter.getByPK(config.toursTableName, { tourDate });
