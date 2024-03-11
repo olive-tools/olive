@@ -47,6 +47,6 @@ const dynamoDbAdapter = require('../shared/dynamoDbAdapter');
 const { insuranceScheduleHandler } = require('./index');
 
 test("insuranceScheduleHandler should call DynamoDbAdapter getByPk", async () => {
-    insuranceScheduleHandler({}, new Date(2024, 2, 11));
+    insuranceScheduleHandler({}, new Date('2024-03-11T09:00:00.000Z'));
     expect(dynamoDbAdapter.getByPK).toHaveBeenCalledWith('TOURS_TABLE', { tourDate: '2024-03-11' });
 });
