@@ -151,7 +151,7 @@ async function insuranceScheduleHandler(event, tourDate = new Date()) {
         console.error('ERROR TRYING TO RETRIEVE TOUR ATVS', e);
         return;
     }
-    if (!tourAtvs) {
+    if (!tourAtvs || tourAtvs.length == 0) {
         return;
     }
     const personRows = tourAtvs.flatMap(tourAtv => {
@@ -162,9 +162,7 @@ async function insuranceScheduleHandler(event, tourDate = new Date()) {
     }).map(person => {
         return [person.name.S, person.cpf.S, person.birth.S, tourDate, tourDate, 30000, '', '', 1, 1];
     });
-    if (personRows.length == 0) {
-        return;
-    }
+    
     let copyFileMetadata;
     try {
         copyFileMetadata = await copyFile(config.googleDriveBaseInsuranceFile, `${tourDate}-seguros`);
