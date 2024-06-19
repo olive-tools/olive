@@ -40,6 +40,30 @@ class DynamoDbAdapter {
     return Items;
   }
 
+  async getByPKAsJson(tableName, partitionKey) {
+    const dynamoItems = await this.getByPK(tableName, partitionKey);
+    if (!dynamoItems) {
+      return [];
+    }
+    return this.#convertDynamoItemsToJSON(dynamoItems);
+  }
+
+  #convertDynamoItemsToJSON(items) {
+    return items.map(item => {
+      const jsonItem = {};
+      for (const [key, value] of Object.entries(item)) {
+        const dataType = Object.keys(value)[0];
+        const dataValue = value[dataType];
+        if (dataType === 'M') {
+          jsonItem[key] = this.#convertDynamoItemsToJSON([dataValue])[0];
+        } else {
+          jsonItem[key] = dataValue;
+        }
+      }
+      return jsonItem;
+    });
+  }
+
   async putItemFromObjet(tableName, item) {
     const dynamoDBItem = this.#buildDynamoItemFromObject(item);
 

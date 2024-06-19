@@ -7,14 +7,9 @@ const { v4 } = require('uuid');
 const { DynamoDbAdapter } = require('../shared/dynamoDbAdapter');
 const { insertSheetRows } = require('./googledrive/insert-sheet-rows');
 const { copyFile } = require('./googledrive/copy-file');
+const { retrieveTourAtvs } = require('./use-cases/retrieve-tour-atvs');
 const client = new SQSClient(config.sqsConfig);
 
-async function health(event) {
-    console.log(JSON.stringify(event));
-    return {
-        statusCode: 200
-    };
-}
 
 async function formSubmitHandler(event) {
     console.log(JSON.stringify(config));
@@ -152,12 +147,12 @@ async function insuranceScheduleHandler(event) {
         console.error('ERROR TRYING TO RETRIEVE TOUR ATVS', e);
         return;
     }
-    if(!tourAtvs) {
+    if (!tourAtvs) {
         return;
     }
     const personRows = tourAtvs.flatMap(tourAtv => {
         const { customer, passenger } = tourAtv;
-        if(!passenger)
+        if (!passenger)
             return [customer.M];
         return [customer.M, passenger.M]
     }).map(person => {
@@ -181,4 +176,26 @@ async function insuranceScheduleHandler(event) {
     }
 }
 
-module.exports = { formSubmitHandler, health, formSubmitMessageHandler, insuranceScheduleHandler };
+async function getTourAtvsHandler(event) {
+    if (!isValidAuth(event.headers.authorization)) {
+        return {
+            statusCode: 401,
+        };
+    }
+    const date = event.queryStringParameters.date;
+    const result = await retrieveTourAtvs(date);
+    return {
+        statusCode: 200,    
+        headers: {
+            "content-type": "application/json",
+        },
+        body: JSON.stringify(result)
+    };
+}
+
+module.exports = {
+    formSubmitHandler,
+    formSubmitMessageHandler,
+    insuranceScheduleHandler,
+    getTourAtvsHandler,
+};
