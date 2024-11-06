@@ -103,11 +103,11 @@ functions:
             Fn::GetAtt:
               - gaFormSubmition
               - Arn
-  health:
-    handler: src/ga-automation/index.health
+  getTourAtvsHandler:
+    handler: src/ga-automation/index.getTourAtvsHandler
     events:
       - httpApi:
-          path: /
+          path: /ga/rides
           method: get
   insuranceScheduleHandler:
     handler: src/ga-automation/index.insuranceScheduleHandler
