@@ -12,7 +12,6 @@ const client = new SQSClient(config.sqsConfig);
 
 
 async function formSubmitHandler(event) {
-    console.log(JSON.stringify(config));
     if (!isValidAuth(event.headers.authorization)) {
         return {
             statusCode: 401,
@@ -169,7 +168,8 @@ async function insuranceScheduleHandler(event) {
         return;
     }
     try {
-        const range = `Plan1!B8:K${7 + personRows.length}`;
+        const HEADER_LENGTH = 7;
+        const range = `Plan1!B8:K${HEADER_LENGTH + personRows.length}`;
         await insertSheetRows(copyFileMetadata.id, range, personRows);
     } catch (e) {
         console.error('ERROR INSERTING SHEET ROWS', e);

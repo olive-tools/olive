@@ -107,7 +107,7 @@ functions:
     handler: src/ga-automation/index.getTourAtvsHandler
     events:
       - httpApi:
-          path: /ga/form
+          path: /ga/rides
           method: get
   insuranceScheduleHandler:
     handler: src/ga-automation/index.insuranceScheduleHandler
