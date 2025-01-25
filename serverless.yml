@@ -26,19 +26,10 @@ provider:
       statements:
         - Effect: Allow
           Action:
-            - "s3:PutObject"
-          Resource:
-            Fn::Join:
-              - "/"
-              - - "Fn::GetAtt": [oliveQRCodes, Arn]
-                - "*"
-        - Effect: Allow
-          Action:
             - "dynamodb:PutItem"
             - "dynamodb:GetItem"
             - "dynamodb:Query"
           Resource:
-            - "Fn::GetAtt": [oliveQRCodesTable, Arn]
             - "Fn::GetAtt": [gaToursTable, Arn]
         - Effect: Allow
           Action:
@@ -49,25 +40,6 @@ provider:
 
 resources:
   Resources:
-    oliveQRCodes:
-      Type: AWS::S3::Bucket
-      Properties:
-        BucketName: olive-qr-codes
-    oliveQRCodesTable:
-      Type: AWS::DynamoDB::Table
-      Properties:
-        TableName: olive-qr-codes
-        BillingMode: PAY_PER_REQUEST
-        AttributeDefinitions:
-          - AttributeName: "id"
-            AttributeType: S
-          - AttributeName: "createdAt"
-            AttributeType: N
-        KeySchema:
-          - AttributeName: "id"
-            KeyType: HASH
-          - AttributeName: "createdAt"
-            KeyType: RANGE
     gaFormSubmition:
       Type: AWS::SQS::Queue
       Properties:
