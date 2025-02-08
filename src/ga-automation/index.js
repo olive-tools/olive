@@ -1,6 +1,6 @@
 const { isValidAuth } = require('../shared/auth');
 const { buildGravataAventuraPDF } = require('./pdf');
-const { convertBrDateToIso, currentBrIsoDate } = require('./utils');
+const { currentBrIsoDate } = require('./utils');
 const { SendMessageCommand, SQSClient } = require("@aws-sdk/client-sqs"); // todo: create adapter
 const { config } = require('./config');
 const { v4 } = require('uuid');
@@ -9,7 +9,8 @@ const { insertSheetRows } = require('./googledrive/insert-sheet-rows');
 const { copyFile } = require('./googledrive/copy-file');
 const { retrieveTourAtvs } = require('./use-cases/retrieve-tour-atvs');
 const client = new SQSClient(config.sqsConfig);
-
+const { mapSheetsArrayToTour } = require('./mappers/mappers');
+const axios = require('axios');
 
 async function formSubmitHandler(event) {
     if (!isValidAuth(event.headers.authorization)) {
@@ -19,7 +20,7 @@ async function formSubmitHandler(event) {
     }
     const raw = JSON.parse(event.body).event.values;
     console.log(raw);
-    const formData = parseData(raw);
+    const formData = mapSheetsArrayToTour(raw);
     const command = new SendMessageCommand({
         QueueUrl: config.sqsUrl,
         MessageBody: JSON.stringify(formData),
@@ -53,6 +54,19 @@ async function formSubmitMessageHandler(event) {
         } catch (e) {
             console.error('PERSISTENCE TO DYNAMODB ERROR', e)
         }
+        try {
+            const auth = Buffer.from(`admin:${config.oliveToolsSecret}`).toString('base64');
+            axios.post(`${config.oliveToolUrl}/service-requests`, formSubmition, {
+                headers: {
+                    'Authorization': `Basic ${auth}`,
+                    'Content-Type': 'application/json',
+                },
+                timeout: 5000,
+            });
+        } catch (e) {
+            console.error('OLIVE TOOL CALL ERROR', e);
+        }
+
     }
 }
 
@@ -65,75 +79,6 @@ function fileNameFromFormData(formData) {
         fileName = `${first}-${last}`;
     }
     return `${formData.tourDate}-${fileName}`.toLowerCase();
-}
-
-function parseData(formData) {
-    const [
-        submitedAt,
-        customerName,
-        customerBirth,
-        customerDriverCode,
-        customerCpf,
-        customerAddress,
-        customerCity,
-        customerState,
-        customerPhone,
-        hasPassenger,
-        passengerName,
-        passengerBirth,
-        passengerDriverCode,
-        passengerCpf,
-        addressType,
-        passengerAddress,
-        passengerCity,
-        passengerState,
-        passengerCep,
-        customerCep,
-        passengerPhone,
-        tourName,
-        ignoreThisParameter,
-        tourDate
-    ] = formData;
-
-    const customer = {
-        name: customerName.trim(),
-        cpf: customerCpf.trim(),
-        driverCode: customerDriverCode.trim(),
-        birth: convertBrDateToIso(customerBirth.trim()),
-        address: {
-            street: customerAddress.trim(),
-            city: customerCity.trim(),
-            state: customerState.trim(),
-        },
-        phone: customerPhone.trim()
-    }
-
-    if (hasPassenger !== 'Sim') {
-        return { customer, tourName, tourDate: convertBrDateToIso(tourDate) };
-    }
-
-    let passenger = {
-        name: passengerName.trim(),
-        cpf: passengerCpf.trim(),
-        driverCode: passengerDriverCode?.trim() ?? '',
-        birth: convertBrDateToIso(passengerBirth.trim()),
-        phone: passengerPhone.trim()
-    }
-
-    const sameAddress = addressType !== 'Outro';
-
-    if (sameAddress) {
-        passenger = { ...passenger, address: customer.address };
-    } else {
-        passenger = {
-            ...passenger, address: {
-                street: passengerAddress,
-                city: passengerCity,
-                state: passengerState,
-            },
-        };
-    }
-    return { customer, passenger, tourName, tourDate: convertBrDateToIso(tourDate) };
 }
 
 async function insuranceScheduleHandler(event) {
@@ -185,7 +130,7 @@ async function getTourAtvsHandler(event) {
     const date = event.queryStringParameters.date;
     const result = await retrieveTourAtvs(date);
     return {
-        statusCode: 200,    
+        statusCode: 200,
         headers: {
             "content-type": "application/json",
         },
