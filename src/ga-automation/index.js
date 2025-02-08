@@ -56,7 +56,7 @@ async function formSubmitMessageHandler(event) {
         }
         try {
             const auth = Buffer.from(`admin:${config.oliveToolsSecret}`).toString('base64');
-            axios.post(`${config.oliveToolsUrl}/service-requests`, formSubmition, {
+            await axios.post(`${config.oliveToolsUrl}/service-requests`, formSubmition, {
                 headers: {
                     'Authorization': `Basic ${auth}`,
                     'Content-Type': 'application/json',
