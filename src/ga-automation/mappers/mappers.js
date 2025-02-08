@@ -1,4 +1,4 @@
-const { convertBrDateToIso } = require('./utils');
+const { convertBrDateToIso } = require('../utils');
 
 function mapSheetsArrayToTour(formData) {
     const [
