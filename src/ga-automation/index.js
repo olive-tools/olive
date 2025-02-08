@@ -60,7 +60,8 @@ async function formSubmitMessageHandler(event) {
                 headers: {
                     'Authorization': `Basic ${auth}`,
                     'Content-Type': 'application/json',
-                }
+                },
+                timeout: 5000,
             });
         } catch (e) {
             console.error('OLIVE TOOL CALL ERROR', e);
