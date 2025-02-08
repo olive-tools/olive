@@ -69,4 +69,4 @@ function mapSheetsArrayToTour(formData) {
     return { customer, passenger, tourName, tourDate: convertBrDateToIso(tourDate) };
 }
 
-export { mapSheetsArrayToTour };
+module.exports = { mapSheetsArrayToTour };
