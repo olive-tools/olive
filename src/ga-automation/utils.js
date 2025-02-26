@@ -1,4 +1,7 @@
 function convertBrDateToIso(dateString) {
+    if (!dateString) {
+        return '';
+    }
     var parts = dateString.split('/');
     var day = parts[0];
     var month = parts[1];

@@ -29,16 +29,16 @@ function mapSheetsArrayToTour(formData) {
     ] = formData;
 
     const customer = {
-        name: customerName.trim(),
-        cpf: customerCpf.trim(),
-        driverCode: customerDriverCode.trim(),
-        birth: convertBrDateToIso(customerBirth.trim()),
+        name: customerName?.trim() ?? '',
+        cpf: customerCpf?.trim() ?? '',
+        driverCode: customerDriverCode?.trim() ?? '',
+        birth: convertBrDateToIso(customerBirth?.trim()),
         address: {
-            street: customerAddress.trim(),
-            city: customerCity.trim(),
-            state: customerState.trim(),
+            street: customerAddress?.trim() ?? '',
+            city: customerCity?.trim() ?? '',
+            state: customerState?.trim() ?? '',
         },
-        phone: customerPhone.trim()
+        phone: customerPhone?.trim() ?? ''
     }
 
     if (hasPassenger !== 'Sim') {
@@ -46,11 +46,11 @@ function mapSheetsArrayToTour(formData) {
     }
 
     let passenger = {
-        name: passengerName.trim(),
-        cpf: passengerCpf.trim(),
+        name: passengerName?.trim() ?? '',
+        cpf: passengerCpf?.trim() ?? '',
         driverCode: passengerDriverCode?.trim() ?? '',
-        birth: convertBrDateToIso(passengerBirth.trim()),
-        phone: passengerPhone.trim()
+        birth: convertBrDateToIso(passengerBirth?.trim()),
+        phone: passengerPhone?.trim() ?? ''
     }
 
     const sameAddress = addressType !== 'Outro';
