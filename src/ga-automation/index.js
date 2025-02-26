@@ -2,6 +2,7 @@ const { isValidAuth } = require('../shared/auth');
 const { buildGravataAventuraPDF } = require('./pdf');
 const { currentBrIsoDate } = require('./utils');
 const { SendMessageCommand, SQSClient } = require("@aws-sdk/client-sqs"); // todo: create adapter
+const { SNSClient, PublishCommand } = require("@aws-sdk/client-sns"); // todo: create adapter
 const { config } = require('./config');
 const { v4 } = require('uuid');
 const { DynamoDbAdapter } = require('../shared/dynamoDbAdapter');
@@ -11,6 +12,7 @@ const { retrieveTourAtvs } = require('./use-cases/retrieve-tour-atvs');
 const client = new SQSClient(config.sqsConfig);
 const { mapSheetsArrayToTour } = require('./mappers/mappers');
 const axios = require('axios');
+const sns = new SNSClient(config.snsConfig);
 
 async function formSubmitHandler(event) {
     if (!isValidAuth(event.headers.authorization)) {
@@ -138,9 +140,41 @@ async function getTourAtvsHandler(event) {
     };
 }
 
+async function gaFormPublishHandler(event) {
+    if (!isValidAuth(event.headers.authorization)) {
+        return {
+            statusCode: 401,
+        };
+    }
+    const raw = JSON.parse(event.body).event.values;
+    console.log(raw);
+    const formData = mapSheetsArrayToTour(raw);
+    
+    const params = {
+        Message: JSON.stringify(formData),
+        TopicArn: config.snsArn,
+    };
+
+    try {
+        const command = new PublishCommand(params);
+        await sns.send(command);
+        return {
+            statusCode: 200,
+            body: JSON.stringify({ message: 'Message published to SNS topic' })
+        };
+    } catch (error) {
+        console.error('Error publishing to SNS topic:', error);
+        return {
+            statusCode: 500,
+            body: JSON.stringify({ error: 'Failed to publish message to SNS topic' })
+        };
+    }
+}
+
 module.exports = {
     formSubmitHandler,
     formSubmitMessageHandler,
     insuranceScheduleHandler,
     getTourAtvsHandler,
+    gaFormPublishHandler,
 };

@@ -22,6 +22,8 @@ provider:
     GOOGLE_DRIVE_PARENT_PDF_FOLDER: ${env:GOOGLE_DRIVE_PARENT_PDF_FOLDER}
     GOOGLE_DRIVE_PARENT_INSURANCE_FOLDER: ${env:GOOGLE_DRIVE_PARENT_INSURANCE_FOLDER}
     OLIVE_TOOLS_SECRET: ${env:OLIVE_TOOLS_SECRET}
+    GA_FORM_TOPIC_ARN:
+      Ref: gaFormTopic
   iam:
     role:
       statements:
@@ -38,6 +40,11 @@ provider:
             - "sqs:ReceiveMessage"
           Resource:
             - "Fn::GetAtt": [gaFormSubmition, Arn]
+        - Effect: Allow
+          Action:
+            - "sns:Publish"
+          Resource:
+            - "Ref": gaFormTopic
 
 resources:
   Resources:
@@ -60,6 +67,21 @@ resources:
             KeyType: HASH
           - AttributeName: "id"
             KeyType: RANGE
+    gaFormTopic:
+      Type: AWS::SNS::Topic
+      Properties:
+        TopicName: ga-form-topic
+    gaFormTopicSubscription:
+      Type: AWS::SNS::Subscription
+      Properties:
+        TopicArn:
+          Ref: gaFormTopic
+        Protocol: sqs
+        Endpoint:
+          Fn::GetAtt:
+            - gaFormSubmition
+            - Arn
+        RawMessageDelivery: true
 
 functions:
   gaForm:
@@ -86,6 +108,12 @@ functions:
     handler: src/ga-automation/index.insuranceScheduleHandler
     events:
       - schedule: cron(0 9 * * ? *) # utc-0 which is 6am in brazil
+  gaFormPublishHandler:
+    handler: src/ga-automation/index.gaFormPublishHandler
+    events:
+      - httpApi:
+          path: /ga/form/publish
+          method: post
 
 plugins:
   - serverless-offline-sqs
