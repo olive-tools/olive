@@ -1,7 +1,7 @@
-const { google } = require('googleapis');
-const { getAuth } = require('./auth');
+import { google } from 'googleapis';
+import { getAuth } from './auth';
 
-async function copyFile(fileId, copyName, parents) {
+export async function copyFile(fileId, copyName, parents) {
     const drive = google.drive({ version: 'v3', auth: getAuth() });
     const res = await drive.files.copy({
         fileId: fileId,
@@ -12,5 +12,3 @@ async function copyFile(fileId, copyName, parents) {
     });
     return res.data; // kind, id, name, mimeType
 }
-
-module.exports = { copyFile };

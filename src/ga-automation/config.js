@@ -19,4 +19,5 @@ function isLocal() {
     return process.env.ENVIRONMENT === "local";
 }
 
-module.exports = { config: getConfig() };
+const config = getConfig();
+export { config };

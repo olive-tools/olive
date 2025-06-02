@@ -1,7 +1,7 @@
-const { google } = require('googleapis');
-const { getAuth } = require('./auth');
+import { google } from 'googleapis';
+import { getAuth } from './auth';
 
-async function insertSheetRows(googleSheetId, range, rows) {
+export async function insertSheetRows(googleSheetId, range, rows) {
     try {
         const googleAuth = getAuth();
         const sheetInstance = await google.sheets({ version: 'v4', auth: googleAuth });
@@ -30,5 +30,3 @@ async function insertSheetRows(googleSheetId, range, rows) {
     }
 
 }
-
-module.exports = { insertSheetRows };

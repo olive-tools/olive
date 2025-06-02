@@ -1,18 +1,19 @@
-const { isValidAuth } = require('../shared/auth');
-const { buildGravataAventuraPDF } = require('./pdf');
-const { currentBrIsoDate } = require('./utils');
-const { SendMessageCommand, SQSClient } = require("@aws-sdk/client-sqs"); // todo: create adapter
-const { config } = require('./config');
-const { v4 } = require('uuid');
-const { DynamoDbAdapter } = require('../shared/dynamoDbAdapter');
-const { insertSheetRows } = require('./googledrive/insert-sheet-rows');
-const { copyFile } = require('./googledrive/copy-file');
-const { retrieveTourAtvs } = require('./use-cases/retrieve-tour-atvs');
-const client = new SQSClient(config.sqsConfig);
-const { mapSheetsArrayToTour } = require('./mappers/mappers');
-const axios = require('axios');
+import { isValidAuth } from '../shared/auth.js';
+import { buildGravataAventuraPDF } from './pdf.js';
+import { currentBrIsoDate } from './utils.js';
+import { SendMessageCommand, SQSClient } from "@aws-sdk/client-sqs"; // todo: create adapter
+import { config } from './config.js';
+import { v4 } from 'uuid';
+import { DynamoDbAdapter } from '../shared/dynamoDbAdapter.js';
+import { insertSheetRows } from './googledrive/insert-sheet-rows.js';
+import copyFile from './googledrive/copy-file.js';
+import { retrieveTourAtvs } from './use-cases/retrieve-tour-atvs.js';
+import { mapSheetsArrayToTour } from './mappers/mappers.js';
+import axios from 'axios';
 
-async function formSubmitHandler(event) {
+const client = new SQSClient(config.sqsConfig);
+
+export async function formSubmitHandler(event) {
     if (!isValidAuth(event.headers.authorization)) {
         return {
             statusCode: 401,
@@ -37,19 +38,19 @@ async function formSubmitHandler(event) {
     };
 }
 
-async function formSubmitMessageHandler(event) {
+export async function formSubmitMessageHandler(event) {
     for (const record of event.Records) {
         const formSubmition = JSON.parse(record.body);
         console.log(formSubmition);
         try {
             const pdfBytes = await buildGravataAventuraPDF(formSubmition);
-            const { savePdf } = require(config.savePdfFunctionPath);
+            const { savePdf } = await import(config.savePdfFunctionPath);
             await savePdf(pdfBytes, `${fileNameFromFormData(formSubmition)}.pdf`);
         } catch (e) {
             console.error('SAVE PDF TO GOOGLE DRIVE ERROR', e);
         }
         try {
-            const { persistTour } = require(config.persistTourFunctionPath);
+            const { persistTour } = await import(config.persistTourFunctionPath);
             await persistTour({ ...formSubmition, id: v4() });
         } catch (e) {
             console.error('PERSISTENCE TO DYNAMODB ERROR', e)
@@ -81,7 +82,7 @@ function fileNameFromFormData(formData) {
     return `${formData.tourDate}-${fileName}`.toLowerCase();
 }
 
-async function insuranceScheduleHandler(event) {
+export async function insuranceScheduleHandler(event) {
     const tourDate = currentBrIsoDate();
     let tourAtvs;
     try {
@@ -121,7 +122,7 @@ async function insuranceScheduleHandler(event) {
     }
 }
 
-async function getTourAtvsHandler(event) {
+export async function getTourAtvsHandler(event) {
     if (!isValidAuth(event.headers.authorization)) {
         return {
             statusCode: 401,
@@ -137,10 +138,3 @@ async function getTourAtvsHandler(event) {
         body: JSON.stringify(result)
     };
 }
-
-module.exports = {
-    formSubmitHandler,
-    formSubmitMessageHandler,
-    insuranceScheduleHandler,
-    getTourAtvsHandler,
-};

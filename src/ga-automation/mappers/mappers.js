@@ -1,6 +1,6 @@
-const { convertBrDateToIso } = require('../utils');
+import { convertBrDateToIso } from '../utils';
 
-function mapSheetsArrayToTour(formData) {
+export function mapSheetsArrayToTour(formData) {
     const [
         submitedAt,
         customerName,
@@ -68,5 +68,3 @@ function mapSheetsArrayToTour(formData) {
     }
     return { customer, passenger, tourName, tourDate: convertBrDateToIso(tourDate) };
 }
-
-module.exports = { mapSheetsArrayToTour };

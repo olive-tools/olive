@@ -2,8 +2,9 @@
   "name": "olive",
   "version": "1.0.0",
   "main": "src/index.js",
+  "type": "module",
   "scripts": {
-    "offline": "serverless offline start --reloadHandler",
+    "offline": "serverless offline start",
     "deploy": "sudo hwclock -s && sls deploy",
     "test": "jest"
   },

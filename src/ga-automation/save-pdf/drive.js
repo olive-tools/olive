@@ -1,9 +1,9 @@
-const { google } = require('googleapis');
-const { Readable } = require('stream')
-const { getAuth } = require('../googledrive/auth');
-const { config } = require('../config');
+import { google } from 'googleapis';
+import { Readable } from 'stream';
+import { getAuth } from '../googledrive/auth';
+import { config } from '../config';
 
-async function saveInGoogleDrive(blob, fileName, mimeType = 'application/pdf') {
+export async function saveInGoogleDrive(blob, fileName, mimeType = 'application/pdf') {
     const drive = google.drive({ version: 'v3', auth: getAuth() });
 
     return drive.files.create({
@@ -17,5 +17,3 @@ async function saveInGoogleDrive(blob, fileName, mimeType = 'application/pdf') {
         }
     });
 }
-
-module.exports = { savePdf: saveInGoogleDrive };

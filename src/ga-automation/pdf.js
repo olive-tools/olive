@@ -1,13 +1,13 @@
-const { PDFDocument, rgb, StandardFonts } = require('pdf-lib');
-const fs = require('fs');
-const path = require('path');
+import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
+import { readFileSync } from 'fs';
+import { join } from 'path';
 
 const FONT_SIZE = 9;
 const START_WIDTH = 85;
 const FONT_COLOR = rgb(0.95, 0.1, 0.1);
 
-async function buildGravataAventuraPDF(input) {
-    const pdfDoc = await PDFDocument.load(fs.readFileSync(path.join(__dirname, 'gravata.pdf')));
+export async function buildGravataAventuraPDF(input) {
+    const pdfDoc = await PDFDocument.load(readFileSync(join(__dirname, 'gravata.pdf')));
     const pages = pdfDoc.getPages();
     const firstPage = pages[0];
     const { height } = firstPage.getSize();
@@ -93,5 +93,3 @@ async function drawCustomer(customer, firstPage, helveticaFont, startHight, star
         color: FONT_COLOR,
     });
 }
-
-module.exports = { buildGravataAventuraPDF };
