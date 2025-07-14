@@ -54,19 +54,6 @@ async function formSubmitMessageHandler(event) {
         } catch (e) {
             console.error('PERSISTENCE TO DYNAMODB ERROR', e)
         }
-        try {
-            const auth = Buffer.from(`admin:${config.oliveToolsSecret}`).toString('base64');
-            await axios.post(`${config.oliveToolsUrl}/service-requests`, formSubmition, {
-                headers: {
-                    'Authorization': `Basic ${auth}`,
-                    'Content-Type': 'application/json',
-                },
-                timeout: 5000,
-            });
-        } catch (e) {
-            console.error('OLIVE TOOL CALL ERROR', e);
-        }
-
     }
 }
 

@@ -31,8 +31,6 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           TOKEN: ${{ secrets.TOKEN }}
-          QRCODE_BUCKET_NAME: olive-qr-codes
-          QRCODE_TABLE_NAME: olive-qr-codes
           ENVIRONMENT: prod
           GA_TOURS_TABLE_NAME: ga-tours-atv
           GOOGLE_DRIVE_CREDENTIALS: ${{ secrets.GOOGLE_DRIVE_CREDENTIALS }}
@@ -41,4 +39,3 @@ jobs:
           GOOGLE_DRIVE_PARENT_PDF_FOLDER: '135ZUg58zTdgtS32JzhDou0MDP10iiEYd'
           GOOGLE_DRIVE_PARENT_INSURANCE_FOLDER: '1vVClJS6h9WtpNXtCAqOalp_evg1YCRid'
           SERVERLESS_ACCESS_KEY: ${{ secrets.SERVERLESS_ACCESS_KEY }}
-          OLIVE_TOOLS_SECRET: ${{ secrets.OLIVE_TOOLS_SECRET }}
