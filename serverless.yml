@@ -5,7 +5,7 @@ useDotenv: true
 
 provider:
   name: aws
-  runtime: nodejs18.x
+  runtime: nodejs20.x
   environment:
     TOKEN: ${env:TOKEN}
     QRCODE_BUCKET_NAME: ${env:QRCODE_BUCKET_NAME}

@@ -20,7 +20,7 @@ jobs:
           node-version: '18'
 
       - name: Install Serverless Framework
-        run: npm install -g serverless@3.39.0
+        run: npm install -g serverless@3.40.0
 
       - name: Install project dependencies
         run: npm ci

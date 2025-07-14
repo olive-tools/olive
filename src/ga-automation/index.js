@@ -127,7 +127,18 @@ async function getTourAtvsHandler(event) {
             statusCode: 401,
         };
     }
+    const dateRequiredResponse = {
+        statusCode: 400,
+        body: JSON.stringify({ error: 'Date parameter is required' }),
+    };
+    if (!event.queryStringParameters) {
+        return dateRequiredResponse;
+    }
     const date = event.queryStringParameters.date;
+    if (!date) {
+        return dateRequiredResponse;
+    }
+
     const result = await retrieveTourAtvs(date);
     return {
         statusCode: 200,
