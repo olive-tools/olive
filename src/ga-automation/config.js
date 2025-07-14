@@ -10,8 +10,6 @@ function getConfig() {
         googleDriveBaseInsuranceFile: process.env.GOOGLE_DRIVE_BASE_INSURANCE_FILE,
         googleDriveParentTermFolder: process.env.GOOGLE_DRIVE_PARENT_PDF_FOLDER,
         googleDriveParentInsuranceFolder: process.env.GOOGLE_DRIVE_PARENT_INSURANCE_FOLDER,
-        oliveToolsUrl: "https://olive.tools/api",
-        oliveToolsSecret: process.env.OLIVE_TOOLS_SECRET,
     }
 }
 
