@@ -87,9 +87,9 @@ async function insuranceScheduleHandler(event) {
         if (passengers && passengers.length > 0) {
             return passengers.map(p => {
                 const buggyPassenger = {
-                    name: p.name,
+                    name: p.fullName,
                     cpf: p.cpf, 
-                    birth: p.birth,
+                    birth: p.birthday,
                 };
                 return buggyPassenger;  
             });

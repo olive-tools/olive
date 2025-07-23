@@ -74,8 +74,8 @@ function mapBuggyFormArrayToTour(raw) {
         timestamp: raw[0],
         marketingSource: raw[1],
         hotelOrBusiness: raw[2],
-        tourRoute: raw[3],
-        tourDate: raw[4],
+        tourName: raw[3],
+        tourDate: convertBrDateToIso(raw[4]),
         passengers: []
     };
 
@@ -88,7 +88,7 @@ function mapBuggyFormArrayToTour(raw) {
         
         const passenger = {
             fullName: raw[currentIndex],
-            birthday: raw[currentIndex + 1],
+            birthday: convertBrDateToIso(raw[currentIndex + 1]),
             cpf: raw[currentIndex + 2],
             phoneNumber: raw[currentIndex + 3]
         };
