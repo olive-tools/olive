@@ -83,6 +83,12 @@ functions:
     handler: src/ga-automation/index.insuranceScheduleHandler
     events:
       - schedule: cron(0 9 * * ? *) # utc-0 which is 6am in brazil
+  gaBuggyForm:
+    handler: src/ga-automation/index.buggyFormSubmitHandler
+    events:
+      - httpApi:
+          path: /ga/buggy-form
+          method: post
 
 plugins:
   - serverless-offline-sqs

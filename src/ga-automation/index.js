@@ -136,9 +136,25 @@ async function getTourAtvsHandler(event) {
     };
 }
 
+async function buggyFormSubmitHandler(event) {
+    if (!isValidAuth(event.headers.authorization)) {
+        return {
+            statusCode: 401,
+        };
+    }
+    const raw = JSON.parse(event.body).event.values;
+    console.log(raw);
+    console.log('Buggy form submit handler triggered', raw);
+
+    return {
+        statusCode: 200,
+    };
+}
+
 module.exports = {
     formSubmitHandler,
     formSubmitMessageHandler,
     insuranceScheduleHandler,
     getTourAtvsHandler,
+    buggyFormSubmitHandler,
 };
