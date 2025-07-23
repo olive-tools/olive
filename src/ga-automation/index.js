@@ -9,7 +9,7 @@ const { insertSheetRows } = require('./googledrive/insert-sheet-rows');
 const { copyFile } = require('./googledrive/copy-file');
 const { retrieveTourAtvs } = require('./use-cases/retrieve-tour-atvs');
 const client = new SQSClient(config.sqsConfig);
-const { mapSheetsArrayToTour } = require('./mappers/mappers');
+const { mapSheetsArrayToTour, mapBuggyFormArrayToTour } = require('./mappers/mappers');
 const axios = require('axios');
 
 async function formSubmitHandler(event) {
@@ -73,22 +73,49 @@ async function insuranceScheduleHandler(event) {
     let tourAtvs;
     try {
         const dynamoDbAdapter = new DynamoDbAdapter();
-        tourAtvs = await dynamoDbAdapter.getByPK(config.toursTableName, { tourDate });
+        tourAtvs = await dynamoDbAdapter.getByPKAsJson(config.toursTableName, { tourDate });
     } catch (e) {
         console.error('ERROR TRYING TO RETRIEVE TOUR ATVS', e);
         return;
     }
-    if (!tourAtvs) {
+    if (!tourAtvs || tourAtvs.length === 0) {
         return;
     }
+
     const personRows = tourAtvs.flatMap(tourAtv => {
-        const { customer, passenger } = tourAtv;
-        if (!passenger)
-            return [customer.M];
-        return [customer.M, passenger.M]
+        const { customer, passenger, passengers } = tourAtv;
+        if (passengers && passengers.length > 0) {
+            return passengers.map(p => {
+                const buggyPassenger = {
+                    name: p.name,
+                    cpf: p.cpf, 
+                    birth: p.birth,
+                };
+                return buggyPassenger;  
+            });
+        }
+
+        const atvDriver = {
+            name: customer.name,
+            cpf: customer.cpf,
+            birth: customer.birth,
+        };
+
+        if (!passenger) {
+            return [atvDriver];
+        }
+
+        const atvPassenger = {
+            name: passenger.name,
+            cpf: passenger.cpf,
+            birth: passenger.birth,
+        };
+
+        return [atvDriver, atvPassenger];
     }).map(person => {
-        return [person.name.S, person.cpf.S, person.birth.S, tourDate, tourDate, 30000, '', '', 1, 1];
+        return [person.name, person.cpf, person.birth, tourDate, tourDate, 30000, '', '', 1, 1];
     });
+
     if (personRows.length == 0) {
         return;
     }
@@ -143,12 +170,40 @@ async function buggyFormSubmitHandler(event) {
         };
     }
     const raw = JSON.parse(event.body).event.values;
-    console.log(raw);
-    console.log('Buggy form submit handler triggered', raw);
+    console.log('Raw buggy form data:', raw);
 
-    return {
-        statusCode: 200,
-    };
+    const buggyTourData = mapBuggyFormArrayToTour(raw);
+    console.log('Processed buggy tour data:', buggyTourData);
+
+    try {
+        const dynamoDbAdapter = new DynamoDbAdapter();
+        const tourRecord = { ...buggyTourData, id: v4() };
+
+        await dynamoDbAdapter.putItemFromObjet(config.toursTableName, tourRecord);
+
+        return {
+            statusCode: 200,
+            headers: {
+                "content-type": "application/json",
+            },
+            body: JSON.stringify({
+                message: "Buggy tour data saved successfully",
+                tourId: tourRecord.id,
+                tourDate: tourRecord.tourDate,
+            })
+        };
+    } catch (error) {
+        console.error('Error saving buggy tour data:', error);
+        return {
+            statusCode: 500,
+            headers: {
+                "content-type": "application/json",
+            },
+            body: JSON.stringify({
+                error: "Failed to save tour data"
+            })
+        };
+    }
 }
 
 module.exports = {

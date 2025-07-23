@@ -56,6 +56,16 @@ class DynamoDbAdapter {
         const dataValue = value[dataType];
         if (dataType === 'M') {
           jsonItem[key] = this.#convertDynamoItemsToJSON([dataValue])[0];
+        } else if (dataType === 'L') {
+          jsonItem[key] = dataValue.map(listItem => {
+            const itemType = Object.keys(listItem)[0];
+            const itemValue = listItem[itemType];
+            if (itemType === 'M') {
+              return this.#convertDynamoItemsToJSON([itemValue])[0];
+            } else {
+              return itemValue;
+            }
+          });
         } else {
           jsonItem[key] = dataValue;
         }
@@ -74,31 +84,43 @@ class DynamoDbAdapter {
     return this.#dynamoDb.send(dynamoCommand);
   }
 
-  #buildDynamoItemFromObject(item) { //to be complete, function should cover keys which are arrays -> https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/HowItWorks.NamingRulesDataTypes.html#HowItWorks.DataTypeDescriptors
+  #buildDynamoItemFromObject(item) { // this function does not handle complex types like set, list of lists, etc.
     let dynamoDBItem = {};
     for (let key of Object.keys(item)) {
-      if (typeof item[key] == 'object') {
+      if (Array.isArray(item[key])) {
+        dynamoDBItem = {
+          ...dynamoDBItem,
+          [key]: {
+            'L': item[key].map(arrayItem => {
+              if (typeof arrayItem === 'object' && arrayItem !== null) {
+                return { 'M': this.#buildDynamoItemFromObject(arrayItem) };
+              } else {
+                return { [this.#getDynamoDbDataType(arrayItem)]: `${arrayItem}` };
+              }
+            })
+          }
+        }
+      } else if (typeof item[key] == 'object' && item[key] !== null) {
         dynamoDBItem = {
           ...dynamoDBItem,
           [key]: { 'M': this.#buildDynamoItemFromObject(item[key]) }
         }
-        continue;
+      } else {
+        dynamoDBItem = {
+          ...dynamoDBItem,
+          [key]: { [this.#getDynamoDbDataType(item[key])]: `${item[key]}` },
+        };
       }
-      dynamoDBItem = {
-        ...dynamoDBItem,
-        [key]: { [this.#getDynamoDbDataType(item[key])]: `${item[key]}` },
-      };
     }
 
     return dynamoDBItem;
   }
 
   #getDynamoDbDataType(value) {
+    if (value === null || value === undefined) {
+      return "NULL";
+    }
     switch (typeof value) {
-      case "undefined":
-        return "NULL";
-      case "null":
-        return "NULL";
       case "string":
         return "S";
       case "symbol":
