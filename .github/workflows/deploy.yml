@@ -17,10 +17,10 @@ jobs:
       - name: Install Node.js
         uses: actions/setup-node@v2
         with:
-          node-version: '18'
+          node-version: '24'
 
       - name: Install Serverless Framework
-        run: npm install -g serverless@3.40.0
+        run: npm install -g osls
 
       - name: Install project dependencies
         run: npm ci
