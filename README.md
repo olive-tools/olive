@@ -1,6 +1,7 @@
 # Olive
 
-Built with Serverless Framework
+Built with Serverless Framework (open source fork)
+https://github.com/oss-serverless/serverless
 
 # Run
 

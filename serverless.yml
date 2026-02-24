@@ -5,7 +5,7 @@ useDotenv: true
 
 provider:
   name: aws
-  runtime: nodejs20.x
+  runtime: nodejs24.x
   environment:
     TOKEN: ${env:TOKEN}
     ENVIRONMENT: ${env:ENVIRONMENT}
